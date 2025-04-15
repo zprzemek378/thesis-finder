@@ -25,7 +25,12 @@
   "homepage": "https://github.com/zprzemek378/thesis-finder#readme",
   "description": "",
   "devDependencies": {
+    "@types/node": "^22.14.1",
     "concurrently": "^9.1.2",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "tailwindcss": "^4.1.4"
   }
 }
