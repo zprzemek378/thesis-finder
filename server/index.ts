@@ -1,4 +1,5 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 import app from "./src/app";
 
 import { MongoClient, ServerApiVersion } from "mongodb";

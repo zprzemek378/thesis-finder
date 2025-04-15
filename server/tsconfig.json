@@ -1,7 +1,19 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "target": "ES2022",
+    "module": "ESNext",  // or "ESNext" if using ESM
+    "rootDir": ".",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node"
   },
-  "include": ["./**/*.ts", "../shared"]
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  },
+  "include": ["./**/*.ts", "../shared"],
+  "exclude": ["node_modules"]
 }
