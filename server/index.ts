@@ -1,23 +1,32 @@
-import express from "express";
+require('dotenv').config();
+import app from "./src/app";
 
-const PORT = 3000;
+import { MongoClient, ServerApiVersion } from "mongodb";
 
-const app = express();
-// Middleware do parsowania JSON
-app.use(express.json());
 
-// Prosty endpoint GET
-app.get("/", (req: express.Request, res: express.Response) => {
-  res.send("Hello, TypeScript with Express!");
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@maindb.d7gya1z.mongodb.net/?appName=MainDB`;
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
 });
 
-// Endpoint POST
-app.post("/data", (req: express.Request, res: express.Response) => {
-  const { name } = req.body;
-  res.json({ message: `Hello, ${name}!` });
-});
+// Testowe połączenie do bazy
+async function startServer() {
+  try {
+    await client.connect();
+    console.log("✅ Connected to MongoDB");
 
-// Startowanie serwera
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`🚀 Server is running at http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Failed to connect to MongoDB", err);
+    process.exit(1);
+  }
+}
+
+startServer();
