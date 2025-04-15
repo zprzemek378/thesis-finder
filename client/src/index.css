@@ -20,6 +20,21 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --radius: 0.625rem;
+
+  /* New color variables */
+  --o-blue-light: #003f7d;
+  --o-blue-dark: #002b59;
+  --o-blue: #00356b;
+  --o-yellow: #ffb81c;
+  --o-yellow-light: #ffd270;
+  --o-yellow-dark: #ff9e00;
+  --o-gray: #54685a;
+  --o-gray-light: #f0f0f0;
+  --o-white: #ffffff;
+  --o-green: #28a745;
+  --o-red: #dc3545;
+
+  /* Existing variables */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
