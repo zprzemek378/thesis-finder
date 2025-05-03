@@ -1,24 +1,17 @@
+// server.ts (lub index.ts)
 import dotenv from 'dotenv';
 dotenv.config();
-import app from "./src/app";
 
-import { MongoClient, ServerApiVersion } from "mongodb";
+import app from './src/app';
+import mongoose from 'mongoose';
 
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@maindb.d7gya1z.mongodb.net/maindb?retryWrites=true&w=majority&appName=MainDB`;
 
-const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@maindb.d7gya1z.mongodb.net/?appName=MainDB`;
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
-
-// Testowe połączenie do bazy
 async function startServer() {
   try {
-    await client.connect();
-    console.log("✅ Connected to MongoDB");
+    console.log("Starting server...");
+    await mongoose.connect(uri);
+    console.log("✅ Connected to MongoDB with Mongoose");
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {

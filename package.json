@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "cd server && node index.ts",
+    "server": "cd server && ts-node index.ts",
     "client": "cd client && npm run dev"
   },
   "repository": {
@@ -25,7 +25,17 @@
   "homepage": "https://github.com/zprzemek378/thesis-finder#readme",
   "description": "",
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/jsonwebtoken": "^9.0.9",
     "concurrently": "^9.1.2",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.14.1"
   }
 }
