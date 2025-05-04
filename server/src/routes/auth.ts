@@ -11,32 +11,52 @@ const router = Router();
 
 // Rejestracja
 // Rejestracja
+import Student from '../models/Student';
+import Supervisor from '../models/Supervisor';
+
+// Rejestracja
 router.post('/register', async (req: any, res: any) => {
-    const { firstName, lastName, email, password, faculty, role } = req.body;
-    console.log("Request body:", req.body); 
-  
-    try {
-      const exists = await User.findOne({ email });
-      if (exists) return res.status(400).json({ message: 'Email zajęty' });
-  
-      const user = await User.create({
-        firstName,
-        lastName,
-        email,
-        password,
-        faculty,
-        role,
-        student: null,
-        supervisor: null,
-        chats: [], // lepiej pusta tablica niż [null]
-      });
-  
-      res.status(201).json({ id: user._id });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Błąd serwera' });
+  const { firstName, lastName, email, password, faculty, role, studentData, supervisorData } = req.body;
+  console.log("Request body:", req.body); 
+
+  try {
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).json({ message: 'Email zajęty' });
+
+    let studentId = null;
+    let supervisorId = null;
+
+    // Dodanie studenta jeśli są dane
+    if (role === 'STUDENT' && studentData) {
+      const newStudent = await Student.create(studentData);
+      studentId = newStudent._id;
     }
-  });
+
+    // Dodanie promotora jeśli są dane
+    if (role === 'SUPERVISOR' && supervisorData) {
+      const newSupervisor = await Supervisor.create(supervisorData);
+      supervisorId = newSupervisor._id;
+    }
+
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      password,
+      faculty,
+      role,
+      student: studentId,
+      supervisor: supervisorId,
+      chats: [], // pusta tablica
+    });
+
+    res.status(201).json({ id: user._id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Błąd serwera' });
+  }
+});
+
   
 
 // Logowanie
