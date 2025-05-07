@@ -9,6 +9,7 @@ import { Thesis } from "@/types/thesis";
 import { User } from "@/types/user";
 import ChatsSidebar from "../components/ChatsSidebar";
 import SingleChat from "../components/SingleChat";
+import FixedHeightLayout from "@/common/layout/FixedHeightLayout";
 
 const mockSupervisor: User = {
   _id: "1",
@@ -47,9 +48,9 @@ const mockStudents: User[] = [
 
 const Chats = () => {
   return (
-    <MainLayout>
-      <div className="container mx-auto flex-1 flex flex-col">
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 flex-1">
+    <FixedHeightLayout>
+      <div className="h-full flex flex-col">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 flex-1 min-h-0">
           {/* Sidebar */}
           <div className="md:col-span-1 h-full">
             <ChatsSidebar />
@@ -58,7 +59,7 @@ const Chats = () => {
           <SingleChat />
         </div>
       </div>
-    </MainLayout>
+    </FixedHeightLayout>
   );
 };
 

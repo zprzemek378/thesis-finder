@@ -61,7 +61,7 @@ const ChatsSidebar = () => {
         {exampleMessages.map((m) => (
           <ChatPreview message={m} />
         ))}
-        <Separator.Root className="h-px bg-gray-200 my-2" />
+        <Separator.Root className="h-px bg-gray-200" />
       </div>
     </div>
   );
