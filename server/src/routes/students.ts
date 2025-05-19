@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { verifyAccessTokenMiddleware, AuthRequest } from '../middlewares/auth';
 import Student, { IStudent } from '../models/Student';
+import mongoose from 'mongoose';
 
 const router = Router();
 
@@ -16,6 +17,32 @@ router.get('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Respo
 
     } catch (error) {
         console.error('Błąd podczas pobierania listy studentów:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+    }
+});
+
+// NOWE - GET /students/{id}
+// Pobierz studenta po ID
+router.get('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const studentId = req.params.id;
+
+        // Opcjonalna walidacja ID (sprawdzenie czy to poprawny ObjectId)
+        if (!mongoose.Types.ObjectId.isValid(studentId)) {
+            return res.status(400).json({ message: 'Nieprawidłowy format ID studenta.' });
+        }
+
+        //  Execute the Mongoose Query and explicitly type the result (can be IStudent or null)
+        const student: IStudent | null = await Student.findById(studentId);
+
+        if (!student) {
+            return res.status(404).json({ message: 'Nie znaleziono studenta.' });
+        }
+
+        res.status(200).json(student);
+
+    } catch (error) {
+        console.error('Błąd podczas pobierania studenta po ID:', error);
         res.status(500).json({ message: 'Wystąpił błąd serwera.' });
     }
 });
