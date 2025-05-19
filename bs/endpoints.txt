@@ -19,6 +19,7 @@ GET /Theses
 GET /Theses/{id}
 GET /Theses/{id}/students
 POST /Theses
+POST /Theses/{id}/students
 PUT /Theses/{id}
 DELETE /Theses/{id}
 GET /Requests/students/{id}

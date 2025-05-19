@@ -90,6 +90,87 @@ router.post('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Resp
     }
 });
 
+// NOWE - POST /theses/{id}/students
+// Student zapisuje się na pracę dyplomową o podanym ID
+router.post('/:id/students', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const thesisId = req.params.id;
+        const studentId = req.user!._id; // ID studenta z tokena JWT
+
+        // Sprawdzenie poprawności ID
+        if (!mongoose.Types.ObjectId.isValid(thesisId)) {
+            return res.status(400).json({ message: 'Nieprawidłowy format ID pracy dyplomowej.' });
+        }
+
+        // Rozpoczęcie transakcji (opcjonalne, ale zalecane dla spójności danych)
+        const session = await mongoose.startSession();
+        session.startTransaction();
+
+        try {
+            // Znajdź pracę dyplomową
+            const thesis: IThesis | null = await Thesis.findById(thesisId).session(session);
+            if (!thesis) {
+                await session.abortTransaction();
+                return res.status(404).json({ message: 'Nie znaleziono pracy dyplomowej.' });
+            }
+
+            // Znajdź studenta
+            const student: IStudent | null = await Student.findById(studentId).session(session);
+            if (!student) {
+                await session.abortTransaction();
+                return res.status(404).json({ message: 'Nie znaleziono studenta.' });
+            }
+
+            // Sprawdzenie, czy praca ma jeszcze wolne miejsca
+            if (thesis.studentsLimit <= thesis.students.length) {
+                await session.abortTransaction();
+                return res.status(400).json({ message: 'Praca dyplomowa nie ma już wolnych miejsc.' });
+            }
+
+            // Sprawdzenie, czy student nie jest już zapisany na tę pracę
+            if (thesis.students.includes(studentId)) {
+                await session.abortTransaction();
+                return res.status(400).json({ message: 'Student jest już zapisany na tę pracę dyplomową.' });
+            }
+
+            // Sprawdzenie statusu pracy dyplomowej
+            if (thesis.status !== 'FREE' && thesis.status !== 'TAKEN') {
+                await session.abortTransaction();
+                return res.status(400).json({ message: 'Nie można zapisać się na tę pracę dyplomową. Status to: ' + thesis.status });
+            }
+
+            // Zapisanie studenta do pracy dyplomowej
+            thesis.students.push(studentId);
+            // Zmiana statusu pracy dyplomowej na "TAKEN", gdy pierwszy student się zapisze
+            if (thesis.students.length === 1) {
+                thesis.status = 'TAKEN';
+            }
+            await thesis.save({ session });
+
+            // Dodanie pracy dyplomowej do listy prac studenta (opcjonalne)
+            // student.theses.push(thesisId);
+            // await student.save({ session });
+
+            // Commit transakcji
+            await session.commitTransaction();
+            session.endSession();
+
+            res.status(200).json({ message: 'Student został zapisany na pracę dyplomową.', thesis }); // Zwracamy zaktualizowaną pracę dyplomową
+        } catch (error) {
+            // Obsługa błędów transakcji
+            await session.abortTransaction();
+            session.endSession();
+            console.error('Błąd podczas zapisywania studenta na pracę dyplomową:', error);
+            res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+        }
+
+
+    } catch (error) {
+        console.error('Błąd podczas zapisywania studenta na pracę dyplomową:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+    }
+});
+
 // NOWE - PUT /Theses/{id}
 // Aktualizuj pracę dyplomową o podanym ID (dostępne tylko dla promotorów i administratorów)
 router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
