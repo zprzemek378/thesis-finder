@@ -1,13 +1,13 @@
 // src/models/Message.ts
 import mongoose from 'mongoose';
 
-export interface Imessage extends mongoose.Document {
+export interface IMessage extends mongoose.Document {
     author: mongoose.Types.ObjectId;
     content: string;
     date: Date;
 }
 
-const messageSchema = new mongoose.Schema<Imessage>({
+const messageSchema = new mongoose.Schema<IMessage>({
     author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -17,4 +17,4 @@ const messageSchema = new mongoose.Schema<Imessage>({
     date: { type: Date, default: Date.now },
 });
 
-export default mongoose.model<Imessage>("Student", messageSchema);
+export default mongoose.model<IMessage>("Student", messageSchema);
