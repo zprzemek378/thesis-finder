@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import cookieParser from 'cookie-parser';
 import authRouter from './routes/auth';
+import studentsRouter from './routes/students';
 import { verifyAccessTokenMiddleware } from './middlewares/auth';
 import mongoose from 'mongoose';
 
@@ -13,6 +14,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("IO Thesis Finder project - Welcome to API!");
 });
 app.use('/auth', authRouter);
+app.use('/students', studentsRouter);
 
 // Example protected route
 app.get("/protected", verifyAccessTokenMiddleware, (req: express.Request, res: express.Response) => {
