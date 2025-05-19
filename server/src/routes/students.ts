@@ -75,4 +75,33 @@ router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: AuthRequest, 
     }
 });
 
+// NOWE - GET /students/{id}/requests - zakładamy wg tego, że jakby praca jest wnioskiem, ale nwm czy to na pewno git
+// Pobierz listę zgłoszeń studenta o podanym ID
+router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const studentId = req.params.id;
+
+        if (!mongoose.Types.ObjectId.isValid(studentId)) {
+            return res.status(400).json({ message: 'Nieprawidłowy format ID studenta.' });
+        }
+
+        const student = await Student.findById(studentId);
+        if (!student) {
+            return res.status(404).json({ message: 'Nie znaleziono studenta.' });
+        }
+
+        //  Fetch theses "requested" by the student
+        //  IMPORTANT:  You MUST replace 'requestedByStudent' with the ACTUAL field name in your Thesis model
+        const requests: IThesis[] = await Thesis.find({ requestedByStudent: studentId })
+            .populate('supervisor') //  If you need supervisor details
+            .populate('students');  //  If you need student details
+
+        res.status(200).json(requests);
+
+    } catch (error) {
+        console.error('Błąd podczas pobierania zgłoszeń studenta:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+    }
+});
+
 export default router;
