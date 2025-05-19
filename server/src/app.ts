@@ -5,6 +5,7 @@ import studentsRouter from './routes/students';
 import supervisorsRouter from './routes/supervisors';
 import thesesRouter from './routes/theses';
 import requestsRouter from './routes/requests';
+import messagesRouter from './routes/messages';
 import { verifyAccessTokenMiddleware } from './middlewares/auth';
 import mongoose from 'mongoose';
 
@@ -21,6 +22,7 @@ app.use('/students', studentsRouter);
 app.use('/supervisors', supervisorsRouter);
 app.use('/theses', thesesRouter);
 app.use('/requests', requestsRouter);
+app.use('/messages', messagesRouter);
 
 // Example protected route
 app.get("/protected", verifyAccessTokenMiddleware, (req: express.Request, res: express.Response) => {
