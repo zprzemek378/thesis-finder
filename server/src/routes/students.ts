@@ -103,4 +103,74 @@ router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: AuthRequest
     }
 });
 
+// NOWE - POST /Requests (Create a new request)
+router.post('/Requests', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const studentId = req.user!._id; // Get student ID from the authenticated user
+        const { supervisor, thesisTitle, description } = req.body;
+
+        // Validate data
+        if (!supervisor || !thesisTitle || !description) {
+            return res.status(400).json({ message: 'Wszystkie pola są wymagane.' });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(supervisor)) {
+            return res.status(400).json({ message: 'Nieprawidłowy format ID promotora.' });
+        }
+
+        // Create new request
+        const newRequest: IRequest = new RequestModel({
+            student: studentId,
+            supervisor,
+            thesisTitle,
+            description,
+            status: 'pending' // Initial status
+        });
+
+        // Save request to database
+        const savedRequest = await newRequest.save();
+
+        res.status(201).json(savedRequest); // Return the created request
+
+    } catch (error) {
+        console.error('Błąd podczas tworzenia zgłoszenia:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+    }
+});
+
+
+
+// NOWE - DELETE /Students/{id} (Delete a student)
+router.delete('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const studentId = req.params.id;
+
+        // 1. Authorization check
+        const userRole = req.user!.role; // Assuming req.user is populated by the middleware
+
+        if (userRole !== 'ADMIN') {
+            return res.status(403).json({ message: 'Brak uprawnień do usunięcia studenta.' });
+        }
+
+        // 2. Validate studentId
+        if (!mongoose.Types.ObjectId.isValid(studentId)) {
+            return res.status(400).json({ message: 'Nieprawidłowy format ID studenta.' });
+        }
+
+        // 3. Find and delete student
+        const deletedStudent: IStudent | null = await Student.findByIdAndDelete(studentId);
+
+        if (!deletedStudent) {
+            return res.status(404).json({ message: 'Nie znaleziono studenta.' });
+        }
+
+        // 4. Success response (204 No Content)
+        res.status(204).send(); // Successful deletion, no content to return
+
+    } catch (error) {
+        console.error('Błąd podczas usuwania studenta:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+    }
+});
+
 export default router;
