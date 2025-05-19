@@ -1,3 +1,4 @@
+// src/models/Thesis.ts
 import mongoose from 'mongoose';
 import Supervisor from './Supervisor';
 

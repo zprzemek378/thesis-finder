@@ -1,3 +1,4 @@
+// src/models/Supervisor.ts
 import mongoose from 'mongoose';
 
 export interface ISupervisor extends mongoose.Document {

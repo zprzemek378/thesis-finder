@@ -1,3 +1,4 @@
+// src/models/Chat.ts
 import mongoose from 'mongoose';
 
 export interface IChat extends mongoose.Document {

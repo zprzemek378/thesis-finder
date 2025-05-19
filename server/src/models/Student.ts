@@ -1,3 +1,4 @@
+// src/models/Student.ts
 import mongoose from 'mongoose';
 
 export interface IStudent extends mongoose.Document {
