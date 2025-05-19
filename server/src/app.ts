@@ -2,6 +2,7 @@ import express, { Express } from "express";
 import cookieParser from 'cookie-parser';
 import authRouter from './routes/auth';
 import studentsRouter from './routes/students';
+import supervisorsRouter from './routes/supervisors';
 import { verifyAccessTokenMiddleware } from './middlewares/auth';
 import mongoose from 'mongoose';
 
@@ -15,6 +16,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 });
 app.use('/auth', authRouter);
 app.use('/students', studentsRouter);
+app.use('/supervisors', supervisorsRouter);
 
 // Example protected route
 app.get("/protected", verifyAccessTokenMiddleware, (req: express.Request, res: express.Response) => {
