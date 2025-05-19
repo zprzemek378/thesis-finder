@@ -1,6 +1,7 @@
 // src/routes/auth.ts
-import { Router } from 'express';
-import User from '../models/User';
+import { Router, Request, Response, NextFunction } from 'express';
+import User, { IUser } from '../models/User';
+import { verifyAccessTokenMiddleware, AuthRequest } from '../middlewares/auth';
 import {
   signAccessToken,
   signRefreshToken,
@@ -10,11 +11,9 @@ import {
 const router = Router();
 
 // Rejestracja
-// Rejestracja
 import Student from '../models/Student';
 import Supervisor from '../models/Supervisor';
 
-// Rejestracja
 router.post('/register', async (req: any, res: any) => {
   const { firstName, lastName, email, password, faculty, role, studentData, supervisorData } = req.body;
   console.log("Request body:", req.body); 
@@ -103,6 +102,33 @@ router.post('/refresh', async (req: any, res: any) => {
 // Wylogowanie
 router.post('/logout', (_req, res) => {
   res.clearCookie('jid', { path: '/auth/refresh' }).json({ success: true });
+});
+
+// NOWE - GET /auth/me
+// Pobranie informacji o zalogowanym użytkowniku
+router.get('/me', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    // Type assertion to tell TypeScript that req.user is definitely an IUser
+    const userId = (req.user as IUser)?._id;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Nieautoryzowany dostęp.' });
+    }
+
+    // Znajdź pełne dane użytkownika w bazie danych, wykluczając hasło
+    const user: IUser | null = await User.findById(userId).select('-password'); // Explicitly type user as IUser | null
+
+    if (!user) {
+      return res.status(404).json({ message: 'Nie znaleziono użytkownika.' });
+    }
+
+    // Zwróć dane użytkownika
+    res.status(200).json(user);
+
+  } catch (error) {
+    console.error('Błąd podczas pobierania informacji o użytkowniku:', error);
+    res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+  }
 });
 
 export default router;
