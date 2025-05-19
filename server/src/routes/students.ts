@@ -1,5 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { verifyAccessTokenMiddleware, AuthRequest } from '../middlewares/auth';
+import { Router, Request, NextFunction } from 'express';
+import { verifyAccessTokenMiddleware } from '../middlewares/auth';
 import Student, { IStudent } from '../models/Student';
 import RequestModel, { IRequest } from '../models/Request';
 import mongoose from 'mongoose';
@@ -8,7 +8,7 @@ const router = Router();
 
 // NOWE - GET /students
 // Pobierz listę wszystkich studentów
-router.get('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         // Pobierz wszystkich studentów z bazy danych
         const students: IStudent[] = await Student.find();
@@ -24,7 +24,7 @@ router.get('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Respo
 
 // NOWE - GET /students/{id}
 // Pobierz studenta po ID
-router.get('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const studentId = req.params.id;
 
@@ -51,7 +51,7 @@ router.get('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Re
 
 // NOWE - GET /students/{id}/theses
 // Pobierz prace dyplomowe studenta o podanym ID
-router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const studentId = req.params.id;
 
@@ -77,7 +77,7 @@ router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: AuthRequest, 
 
 // NOWE - GET /students/{id}/requests - zakładamy wg tego, że request model jest potrzebny - dodalem Request.ts po to
 // Pobierz listę zgłoszeń studenta o podanym ID
-router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const studentId = req.params.id;
 
@@ -104,7 +104,7 @@ router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: AuthRequest
 });
 
 // NOWE - PUT /Students/{id} (Update a student)
-router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.put('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const studentId = req.params.id;
 
@@ -124,9 +124,9 @@ router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Re
         const updateData: Partial<IStudent> = req.body; // Data to update
 
         // 3. Validate update data (basic example)
-        if (updateData.indexNumber !== undefined && typeof updateData.indexNumber !== 'string') {
-            return res.status(400).json({ message: 'Numer indeksu musi być ciągiem znaków.' });
-        }
+        // if (updateData.indexNumber !== undefined && typeof updateData.indexNumber !== 'string') {
+        //     return res.status(400).json({ message: 'Numer indeksu musi być ciągiem znaków.' });
+        // }
         // Add more validation for other fields as needed
 
         // 4. Find and update student
@@ -136,7 +136,7 @@ router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Re
             return res.status(404).json({ message: 'Nie znaleziono studenta.' });
         }
 
-        // 5. Success response
+        // 5. Success any
         res.status(200).json(updatedStudent);
 
     } catch (error) {
@@ -146,7 +146,7 @@ router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Re
 });
 
 // NOWE - DELETE /students/{id} (Delete a student)
-router.delete('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.delete('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const studentId = req.params.id;
 
@@ -169,7 +169,7 @@ router.delete('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res:
             return res.status(404).json({ message: 'Nie znaleziono studenta.' });
         }
 
-        // 4. Success response (204 No Content)
+        // 4. Success any (204 No Content)
         res.status(204).send(); // Successful deletion, no content to return
 
     } catch (error) {

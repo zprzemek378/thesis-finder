@@ -1,5 +1,5 @@
 // src/middleware/auth.ts
-import { Request, Response, NextFunction } from 'express';
+import { Request, NextFunction } from 'express';
 import { verifyAccessToken as verifyAccessTokenUtil } from '../utils/jwt';
 import User, { IUser } from '../models/User';
 
@@ -8,8 +8,8 @@ export interface AuthRequest extends Request {
 }
 
 export async function verifyAccessTokenMiddleware(
-    req: AuthRequest,
-    res: Response,
+    req: any,
+    res: any,
     next: NextFunction
 ): Promise<void> {
     const authHeader = req.headers.authorization;

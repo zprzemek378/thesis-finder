@@ -1,5 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { verifyAccessTokenMiddleware, AuthRequest } from '../middlewares/auth';
+import { Router, Request, NextFunction } from 'express';
+import { verifyAccessTokenMiddleware } from '../middlewares/auth';
 import Thesis, { IThesis } from '../models/Thesis';
 import Student, { IStudent } from '../models/Student';
 import mongoose from 'mongoose';
@@ -8,7 +8,7 @@ const router = Router();
 
 // NOWE - GET /Theses
 // Pobierz listę wszystkich prac dyplomowych
-router.get('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const theses: IThesis[] = await Thesis.find().populate('supervisor').populate('students'); // Populate supervisor and students
         res.status(200).json(theses);
@@ -20,7 +20,7 @@ router.get('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Respo
 
 // NOWE - GET /Theses/{id}
 // Pobierz pracę dyplomową po ID
-router.get('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const thesisId = req.params.id;
         if (!mongoose.Types.ObjectId.isValid(thesisId)) {
@@ -39,7 +39,7 @@ router.get('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Re
 
 // NOWE - GET /Theses/{id}/students
 // Pobierz listę studentów zapisanych na daną pracę dyplomową
-router.get('/:id/students', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id/students', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const thesisId = req.params.id;
         if (!mongoose.Types.ObjectId.isValid(thesisId)) {
@@ -58,7 +58,7 @@ router.get('/:id/students', verifyAccessTokenMiddleware, async (req: AuthRequest
 
 // NOWE - POST /Theses
 // Dodaj nową pracę dyplomową (dostępne tylko dla promotorów i administratorów)
-router.post('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const { title, description, degree, field, supervisor, students, status, tags } = req.body;
         const userRole = req.user!.role;
@@ -92,7 +92,7 @@ router.post('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Resp
 
 // NOWE - POST /theses/{id}/students
 // Student zapisuje się na pracę dyplomową o podanym ID
-router.post('/:id/students', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/:id/students', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const thesisId = req.params.id;
         const studentId = req.user!._id; // ID studenta z tokena JWT
@@ -173,7 +173,7 @@ router.post('/:id/students', verifyAccessTokenMiddleware, async (req: AuthReques
 
 // NOWE - PUT /Theses/{id}
 // Aktualizuj pracę dyplomową o podanym ID (dostępne tylko dla promotorów i administratorów)
-router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.put('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const thesisId = req.params.id;
         const userRole = req.user!.role;
@@ -202,7 +202,7 @@ router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Re
 
 // NOWE - DELETE /Theses/{id}
 // Usuń pracę dyplomową o podanym ID (dostępne tylko dla administratorów)
-router.delete('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.delete('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const thesisId = req.params.id;
         const userRole = req.user!.role;

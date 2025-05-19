@@ -1,5 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { verifyAccessTokenMiddleware, AuthRequest } from '../middlewares/auth';
+import { Router, Request, NextFunction } from 'express';
+import { verifyAccessTokenMiddleware } from '../middlewares/auth';
 import mongoose from 'mongoose';
 import MessageModel, { IMessage } from '../models/Message';
 
@@ -7,7 +7,7 @@ const router = Router();
 
 // NOWE - GET /Messages/request/{requestId}
 // Pobierz listę wszystkich wiadomości dla danego ID zgłoszenia
-router.get('/request/:requestId', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/request/:requestId', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const requestId = req.params.requestId;
 
@@ -28,7 +28,7 @@ router.get('/request/:requestId', verifyAccessTokenMiddleware, async (req: AuthR
 
 // NOWE - POST /Messages
 // Dodaj nową wiadomość do zgłoszenia
-router.post('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const authorId = req.user!._id; // Assuming the logged-in user is the author
         const { request, content } = req.body;

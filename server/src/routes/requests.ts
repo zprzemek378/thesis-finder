@@ -1,5 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { verifyAccessTokenMiddleware, AuthRequest } from '../middlewares/auth';
+import { Router, Request, NextFunction } from 'express';
+import { verifyAccessTokenMiddleware } from '../middlewares/auth';
 import mongoose from 'mongoose';
 import RequestModel, { IRequest } from '../models/Request';
 import Message, { IMessage } from '../models/Message';
@@ -8,7 +8,7 @@ const router = Router();
 
 // NOWE - GET /Requests/students/{studentId}
 // Pobierz listę zgłoszeń studenta o podanym ID
-router.get('/students/:studentId', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/students/:studentId', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const studentId = req.params.studentId;
 
@@ -30,7 +30,7 @@ router.get('/students/:studentId', verifyAccessTokenMiddleware, async (req: Auth
 
 // NOWE - GET /Requests/supervisors/{supervisorId}
 // Pobierz listę zgłoszeń dla promotora o podanym ID
-router.get('/supervisors/:supervisorId', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/supervisors/:supervisorId', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.supervisorId;
 
@@ -52,7 +52,7 @@ router.get('/supervisors/:supervisorId', verifyAccessTokenMiddleware, async (req
 
 // NOWE - GET /Requests/{id}/status
 // Pobierz status zgłoszenia o podanym ID
-router.get('/:id/status', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id/status', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const requestId = req.params.id;
 
@@ -76,7 +76,7 @@ router.get('/:id/status', verifyAccessTokenMiddleware, async (req: AuthRequest, 
 
 // NOWE - GET /Requests/{id}/messages
 // Pobierz listę wiadomości związanych ze zgłoszeniem o podanym ID
-router.get('/:id/messages', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id/messages', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const requestId = req.params.id;
 
@@ -97,7 +97,7 @@ router.get('/:id/messages', verifyAccessTokenMiddleware, async (req: AuthRequest
 });
 
 // NOWE - POST /Requests (Create a new request)
-router.post('/Requests', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/Requests', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const studentId = req.user!._id; // Get student ID from the authenticated user
         const { supervisor, thesisTitle, description } = req.body;
@@ -133,7 +133,7 @@ router.post('/Requests', verifyAccessTokenMiddleware, async (req: AuthRequest, r
 
 // NOWE - PUT /Requests/{id}/status
 // Aktualizuj status zgłoszenia o podanym ID
-router.put('/:id/status', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.put('/:id/status', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const requestId = req.params.id;
         const { status } = req.body;
@@ -166,7 +166,7 @@ router.put('/:id/status', verifyAccessTokenMiddleware, async (req: AuthRequest, 
 
 // NOWE - DELETE /Requests/{id}
 // Usuń zgłoszenie o podanym ID
-router.delete('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.delete('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const requestId = req.params.id;
 

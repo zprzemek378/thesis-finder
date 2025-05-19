@@ -1,5 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { verifyAccessTokenMiddleware, AuthRequest } from '../middlewares/auth';
+import { Router, NextFunction } from 'express';
+import { verifyAccessTokenMiddleware } from '../middlewares/auth';
 import Supervisor, { ISupervisor } from '../models/Supervisor';
 import Thesis, { IThesis } from '../models/Thesis';
 import RequestModel, { IRequest } from '../models/Request';
@@ -9,7 +9,7 @@ const router = Router();
 
 // NOWE - GET /Supervisors
 // Pobierz listę wszystkich promotorów
-router.get('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisors: ISupervisor[] = await Supervisor.find();
         res.status(200).json(supervisors);
@@ -21,7 +21,7 @@ router.get('/', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Respo
 
 // NOWE - GET /Supervisors/{id}
 // Pobierz promotora po ID
-router.get('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.id;
         if (!mongoose.Types.ObjectId.isValid(supervisorId)) {
@@ -40,7 +40,7 @@ router.get('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Re
 
 // NOWE - GET /Supervisors/{id}/theses
 // Pobierz prace dyplomowe promotora o podanym ID
-router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.id;
         if (!mongoose.Types.ObjectId.isValid(supervisorId)) {
@@ -56,7 +56,7 @@ router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: AuthRequest, 
 
 // NOWE - GET /Supervisors/{id}/requests
 // Pobierz listę zapytań (propozycji prac) od studentów do promotora o podanym ID
-router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.id;
         if (!mongoose.Types.ObjectId.isValid(supervisorId)) {
@@ -73,7 +73,7 @@ router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: AuthRequest
 
 // NOWE - GET /Supervisors/{id}/availability
 // Pobierz informacje o dostępności promotora (zakładamy, że promotor ma pole 'availability' w swoim modelu)
-router.get('/:id/availability', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/:id/availability', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.id;
         if (!mongoose.Types.ObjectId.isValid(supervisorId)) {
@@ -93,7 +93,7 @@ router.get('/:id/availability', verifyAccessTokenMiddleware, async (req: AuthReq
 
 // NOWE - PUT /Supervisors/{id}
 // Aktualizuj dane promotora o podanym ID (dostępne tylko dla administratora)
-router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.put('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.id;
         const userRole = req.user!.role; // Załóżmy, że rola użytkownika jest dostępna w req.user
@@ -122,7 +122,7 @@ router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Re
 
 // NOWE - DELETE /Supervisors/{id}
 // Usuń promotora o podanym ID (dostępne tylko dla administratora)
-router.delete('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.delete('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.id;
         const userRole = req.user!.role; // Załóżmy, że rola użytkownika jest dostępna w req.user

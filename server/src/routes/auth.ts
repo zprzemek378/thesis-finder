@@ -1,7 +1,7 @@
 // src/routes/auth.ts
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, NextFunction } from 'express';
 import User, { IUser } from '../models/User';
-import { verifyAccessTokenMiddleware, AuthRequest } from '../middlewares/auth';
+import { verifyAccessTokenMiddleware } from '../middlewares/auth';
 import {
   signAccessToken,
   signRefreshToken,
@@ -106,7 +106,7 @@ router.post('/logout', (_req, res) => {
 
 // NOWE - GET /auth/me
 // Pobranie informacji o zalogowanym użytkowniku
-router.get('/me', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/me', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
   try {
     // Type assertion to tell TypeScript that req.user is definitely an IUser
     const userId = (req.user as IUser)?._id;
