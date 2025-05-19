@@ -17,6 +17,7 @@ const supervisorSchema = new mongoose.Schema<ISupervisor>({
         ref: "Thesis",
         default: null
     }],
+    availability: { type: String }                                      // dodalem tutaj dla naszego endpointa aby mogl byc
 });
 
 export default mongoose.model<ISupervisor>("Supervisor", supervisorSchema);
