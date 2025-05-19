@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 
 export interface Imessage extends mongoose.Document {
-  author: mongoose.Types.ObjectId;
-  content: string;
-  date: Date;
+    author: mongoose.Types.ObjectId;
+    content: string;
+    date: Date;
 }
 
 const messageSchema = new mongoose.Schema<Imessage>({
@@ -12,7 +12,7 @@ const messageSchema = new mongoose.Schema<Imessage>({
         ref: "User",
         required: true
     },
-    content: { type: String, required: true },  
+    content: { type: String, required: true },
     date: { type: Date, default: Date.now },
 });
 

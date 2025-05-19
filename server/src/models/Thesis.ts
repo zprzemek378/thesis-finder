@@ -2,15 +2,15 @@ import mongoose from 'mongoose';
 import Supervisor from './Supervisor';
 
 export interface IThesis extends mongoose.Document {
-  title: string,
-  description: string,
-  degree: string,
-  faculty: string,
-  supervisor: mongoose.Types.ObjectId,
-  studentsLimit: number,
-  students: mongoose.Types.ObjectId[],
-  status: "FREE" | "IN_PROGRESS" | "TAKEN" | "FINISHED"
-  tags: string[]
+    title: string,
+    description: string,
+    degree: string,
+    faculty: string,
+    supervisor: mongoose.Types.ObjectId,
+    studentsLimit: number,
+    students: mongoose.Types.ObjectId[],
+    status: "FREE" | "IN_PROGRESS" | "TAKEN" | "FINISHED"
+    tags: string[]
 }
 
 const thesisSchema = new mongoose.Schema<IThesis>({
