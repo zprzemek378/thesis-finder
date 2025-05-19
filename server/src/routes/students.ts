@@ -103,6 +103,48 @@ router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: AuthRequest
     }
 });
 
+// NOWE - PUT /Students/{id} (Update a student)
+router.put('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const studentId = req.params.id;
+
+        // 1. Authorization check
+        const userId = req.user?._id?.toString();
+        const userRole = req.user!.role;
+
+        if (userRole !== 'ADMIN' && userId !== studentId) {
+            return res.status(403).json({ message: 'Brak uprawnień do aktualizacji tego studenta.' });
+        }
+
+        // 2. Validate studentId
+        if (!mongoose.Types.ObjectId.isValid(studentId)) {
+            return res.status(400).json({ message: 'Nieprawidłowy format ID studenta.' });
+        }
+
+        const updateData: Partial<IStudent> = req.body; // Data to update
+
+        // 3. Validate update data (basic example)
+        if (updateData.indexNumber !== undefined && typeof updateData.indexNumber !== 'string') {
+            return res.status(400).json({ message: 'Numer indeksu musi być ciągiem znaków.' });
+        }
+        // Add more validation for other fields as needed
+
+        // 4. Find and update student
+        const updatedStudent: IStudent | null = await Student.findByIdAndUpdate(studentId, updateData, { new: true });
+
+        if (!updatedStudent) {
+            return res.status(404).json({ message: 'Nie znaleziono studenta.' });
+        }
+
+        // 5. Success response
+        res.status(200).json(updatedStudent);
+
+    } catch (error) {
+        console.error('Błąd podczas aktualizacji studenta:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+    }
+});
+
 // NOWE - DELETE /students/{id} (Delete a student)
 router.delete('/:id', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
