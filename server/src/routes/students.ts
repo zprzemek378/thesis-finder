@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { verifyAccessTokenMiddleware, AuthRequest } from '../middlewares/auth';
 import Student, { IStudent } from '../models/Student';
-import Thesis, { IThesis } from '../models/Thesis';
+import RequestModel, { IRequest } from '../models/Request';
 import mongoose from 'mongoose';
 
 const router = Router();
@@ -75,7 +75,7 @@ router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: AuthRequest, 
     }
 });
 
-// NOWE - GET /students/{id}/requests - zakładamy wg tego, że jakby praca jest wnioskiem, ale nwm czy to na pewno git
+// NOWE - GET /students/{id}/requests - zakładamy wg tego, że request model jest potrzebny - dodalem Request.ts po to
 // Pobierz listę zgłoszeń studenta o podanym ID
 router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -90,11 +90,10 @@ router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: AuthRequest
             return res.status(404).json({ message: 'Nie znaleziono studenta.' });
         }
 
-        //  Fetch theses "requested" by the student
-        //  IMPORTANT:  You MUST replace 'requestedByStudent' with the ACTUAL field name in your Thesis model
-        const requests: IThesis[] = await Thesis.find({ requestedByStudent: studentId })
-            .populate('supervisor') //  If you need supervisor details
-            .populate('students');  //  If you need student details
+        // Fetch requests associated with the student
+        const requests: IRequest[] = await RequestModel.find({ student: studentId })
+            .populate('supervisor') // Populate supervisor details
+            .populate('thesis'); // Populate thesis details (if any)
 
         res.status(200).json(requests);
 
