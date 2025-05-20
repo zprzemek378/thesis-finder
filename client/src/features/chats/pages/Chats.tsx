@@ -51,11 +51,9 @@ const Chats = () => {
     <FixedHeightLayout>
       <div className="h-full flex flex-col">
         <div className="grid grid-cols-1 md:grid-cols-6 gap-6 flex-1 min-h-0">
-          {/* Sidebar */}
           <div className="md:col-span-1 h-full">
             <ChatsSidebar />
           </div>
-          {/* Main Content */}
           <SingleChat />
         </div>
       </div>

@@ -54,6 +54,12 @@ const Header = () => {
           <NavButton to="/saved" pathname={pathname}>
             Zapisane
           </NavButton>
+          <NavButton to="/chats" pathname={pathname}>
+            Czaty
+          </NavButton>
+          <NavButton to="/add-thesis" pathname={pathname}>
+            Dodaj pracę
+          </NavButton>
           <NavButton to="/login" variant="login">
             Zaloguj
           </NavButton>
