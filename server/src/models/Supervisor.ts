@@ -17,7 +17,7 @@ const supervisorSchema = new mongoose.Schema<ISupervisor>({
         required: true,
         unique: true 
     },
-    academicTitle: { type: String, required: true },                            // decyduje o ilosci pracy!
+    academicTitle: { type: String, required: true },                            // decyduje o ilosci prac - mega wazne!
     selfInterests: [{ type: String }], 
     thesisList: [{
         type: mongoose.Schema.Types.ObjectId,

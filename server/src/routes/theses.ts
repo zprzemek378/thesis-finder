@@ -3,13 +3,72 @@ import { verifyAccessTokenMiddleware } from '../middlewares/auth';
 import Thesis, { IThesis } from '../models/Thesis';
 import Student, { IStudent } from '../models/Student';
 import Supervisor, { ISupervisor } from '../models/Supervisor';
-import RequestModel, { IRequest } from '../models/Request';
 import mongoose from 'mongoose';
 
 const router = Router();
 
-// NOWE - GET /Theses
+// GET /Theses
 // Pobierz listę wszystkich prac dyplomowych
+router.get('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
+    try {
+        const { degree, field } = req.query;
+        let filter: any = {};
+
+        if (degree) {
+            filter.degree = degree;
+        }
+        if (field) {
+            filter.field = field;
+        }
+
+        const theses: IThesis[] = await Thesis.find(filter).populate('supervisor').populate('students');
+        res.status(200).json(theses);
+    } catch (error) {
+        console.error('Błąd podczas pobierania listy prac dyplomowych:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+    }
+});
+
+// GET /Theses/{id}
+// Pobierz pracę dyplomową po ID
+router.get('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
+    try {
+        const thesisId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(thesisId)) {
+            return res.status(400).json({ message: 'Nieprawidłowy format ID pracy dyplomowej.' });
+        }
+        const thesis: IThesis | null = await Thesis.findById(thesisId).populate('supervisor').populate('students');
+        if (!thesis) {
+            return res.status(404).json({ message: 'Nie znaleziono pracy dyplomowej.' });
+        }
+        res.status(200).json(thesis);
+    } catch (error) {
+        console.error('Błąd podczas pobierania pracy dyplomowej po ID:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+    }
+});
+
+// GET /Theses/{id}/students
+// Pobierz listę studentów zapisanych na daną pracę dyplomową
+router.get('/:id/students', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
+    try {
+        const thesisId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(thesisId)) {
+            return res.status(400).json({ message: 'Nieprawidłowy format ID pracy dyplomowej.' });
+        }
+        const thesis: IThesis | null = await Thesis.findById(thesisId).populate('students');
+        if (!thesis) {
+            return res.status(404).json({ message: 'Nie znaleziono pracy dyplomowej.' });
+        }
+        res.status(200).json(thesis.students);
+    } catch (error) {
+        console.error('Błąd podczas pobierania studentów zapisanych na pracę dyplomową:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera.' });
+    }
+});
+
+// POST /Theses
+// Dodaj nową pracę dyplomową (dostępne tylko dla promotorów i administratorów)
 router.post('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const { title, description, degree, field, supervisor: supervisorId, students: initialStudentIds, status, tags, studentsLimit } = req.body;
@@ -38,12 +97,12 @@ router.post('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: N
         }
 
         let thesisLimit: number;
-        if (degree === 'FIRST_CYCLE') {
+        if (degree === 'BACHELOR') { 
             thesisLimit = 8;
-        } else if (degree === 'SECOND_CYCLE') {
+        } else if (degree === 'MASTER' || degree === 'DOCTORAL' || degree === 'POSTGRADUATE') { 
             thesisLimit = 6;
         } else {
-            return res.status(400).json({ message: 'Nieprawidłowy stopień pracy dyplomowej (degree). Oczekiwano "FIRST_CYCLE" lub "SECOND_CYCLE".' });
+            return res.status(400).json({ message: 'Nieprawidłowy stopień pracy dyplomowej. Oczekiwano "BACHELOR", "MASTER", "DOCTORAL" lub "POSTGRADUATE".' });
         }
 
         const existingThesesCount = await Thesis.countDocuments({
@@ -52,11 +111,10 @@ router.post('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: N
         });
 
         if (existingThesesCount >= thesisLimit) {
-            return res.status(400).json({ message: `Promotor (${supervisorProfile.academicTitle}) osiągnął limit ${thesisLimit} prac dyplomowych stopnia ${degree === 'FIRST_CYCLE' ? 'I' : 'II'}.` });
+            return res.status(400).json({ message: `Promotor (${supervisorProfile.academicTitle}) osiągnął limit ${thesisLimit} prac dyplomowych dostępnych dla niego.` });
         }
-        
-        if (!Array.isArray(supervisorProfile.allowedFields) || !supervisorProfile.allowedFields.includes(field)) {
-            // Jeśli chcemy, aby puste allowedFields oznaczało BRAK OGRANICZEŃ, to musimy zmienić warunek na: if (supervisorProfile.allowedFields.length > 0 && !supervisorProfile.allowedFields.includes(field)) { ... }
+
+        if (Array.isArray(supervisorProfile.allowedFields) && supervisorProfile.allowedFields.length > 0 && !supervisorProfile.allowedFields.includes(field) && !supervisorProfile.allowedFields.includes(field)) {
             return res.status(400).json({ message: `Promotor nie jest uprawniony do prowadzenia prac w dziale: "${field}". Dozwolone działy: ${supervisorProfile.allowedFields.join(', ')}.` });
         }
 
@@ -102,7 +160,7 @@ router.post('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: N
     }
 });
 
-// NOWE - POST /theses/{id}/students
+// POST /theses/{id}/students
 // Student zapisuje się na pracę dyplomową o podanym ID
 router.post('/:id/students', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -141,9 +199,6 @@ router.post('/:id/students', verifyAccessTokenMiddleware, async (req: any, res: 
                 return res.status(400).json({ message: `Nie można zapisać się na tę pracę dyplomową. Jej status to: ${thesis.status}.` });
             }
 
-            // WAŻNE: TUTAJ Zaczyna się logika zatwierdzania.
-            // Student nie jest dodawany bezpośrednio do `thesis.students`, ale do `requests` (jeśli jest system zgłoszeń)
-            // lub do nowej tablicy `pendingStudents` w Thesis, jeśli chcemy to obsługiwać bezpośrednio w Thesis.
             const RequestModel = mongoose.model('Request'); 
             const newRequest = new RequestModel({
                 student: studentId,
@@ -157,9 +212,8 @@ router.post('/:id/students', verifyAccessTokenMiddleware, async (req: any, res: 
 
             // Możesz zmienić status pracy na 'PENDING_APPROVAL' jeśli to pierwszy student, który się "zgłasza"
             // To może być kwestia dyskusyjna, czy praca ma status 'PENDING_APPROVAL' czy 'FREE' dopóki nie ma przypisanych studentów
-            // W tym przypadku pozostawiam 'FREE', dopóki student nie zostanie zatwierdzony i dodany do `thesis.students`
-            // thesis.status = 'PENDING_APPROVAL'; // Opcjonalnie, jeśli chcesz by praca zmieniała status na 'oczekująca'
-            // await thesis.save({ session });
+            // W tym przypadku pozostawiam 'FREE', dopóki student nie zostanie zatwierdzony i dodany do `thesis.students` thesis.status = 'PENDING_APPROVAL'; 
+            // Opcjonalnie, jeśli chcesz by praca zmieniała status na 'oczekująca'  await thesis.save({ session });
             await session.commitTransaction();
             session.endSession();
             res.status(200).json({
@@ -178,7 +232,7 @@ router.post('/:id/students', verifyAccessTokenMiddleware, async (req: any, res: 
     }
 });
 
-// NOWE - POST /theses/{id}/approve-student 
+// POST /theses/{id}/approve-student 
 // Promotor zatwierdza studenta dla danej pracy
 router.post('/:id/approve-student', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -240,7 +294,7 @@ router.post('/:id/approve-student', verifyAccessTokenMiddleware, async (req: any
     }
 });
 
-// NOWE - POST /theses/{id}/reject-student 
+// POST /theses/{id}/reject-student 
 // Promotor odrzuca studenta dla danej pracy
 router.post('/:id/reject-student', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -290,14 +344,14 @@ router.post('/:id/reject-student', verifyAccessTokenMiddleware, async (req: any,
 });
 
 
-// NOWE - PUT /Theses/{id}
+// PUT /Theses/{id}
 // Aktualizuj pracę dyplomową o podanym ID (dostępne tylko dla promotorów i administratorów)
 router.put('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const thesisId = req.params.id;
         const userRole = req.user!.role;
         const loggedInUserId = req.user!._id;
-        const { students: newStudentsIds, ...updateData } = req.body; // Wydzielenie studentów
+        const { students: newStudentsIds, ...updateData } = req.body; 
         if (userRole !== 'SUPERVISOR' && userRole !== 'ADMIN') {
             return res.status(403).json({ message: 'Brak uprawnień do aktualizacji pracy dyplomowej.' });
         }
@@ -311,11 +365,9 @@ router.put('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next:
         if (userRole === 'SUPERVISOR' && thesisToUpdate.supervisor.toString() !== loggedInUserId.toString()) {
             return res.status(403).json({ message: 'Promotor może aktualizować tylko swoje prace dyplomowe.' });
         }
+
         // Obsługa aktualizacji studentów - ten PUT niech służy do ogólnej edycji
         // Przypisywanie/zatwierdzanie studentów będzie osobnym endpointem POST /theses/{id}/assign-student (lub podobnym)
-        // Jeśli jednak chcesz, aby tu też można było modyfikować listę studentów, należy dodać logikę walidacji
-        // i aktualizacji tablicy students w modelu Thesis.
-        // Np. poprzez sprawdzenie czy newStudentsIds jest podane i wykonanie operacji $set na students.
         const updatedThesis: IThesis | null = await Thesis.findByIdAndUpdate(thesisId, updateData, { new: true });
 
         if (!updatedThesis) {
@@ -328,7 +380,7 @@ router.put('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next:
     }
 });
 
-// NOWE - DELETE /Theses/{id}
+// DELETE /Theses/{id}
 // Usuń pracę dyplomową o podanym ID (dostępne tylko dla administratorów)
 router.delete('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {

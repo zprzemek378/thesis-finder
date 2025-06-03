@@ -5,7 +5,7 @@ import MessageModel, { IMessage } from '../models/Message';
 
 const router = Router();
 
-// NOWE - GET /Messages/request/{requestId}
+// GET /Messages/request/{requestId}
 // Pobierz listę wszystkich wiadomości dla danego ID zgłoszenia
 router.get('/request/:requestId', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -16,7 +16,7 @@ router.get('/request/:requestId', verifyAccessTokenMiddleware, async (req: any, 
         }
 
         const messages: IMessage[] = await MessageModel.find({ request: requestId })
-            .populate('author'); // Populate author details
+            .populate('author'); 
 
         res.status(200).json(messages);
 
@@ -26,11 +26,11 @@ router.get('/request/:requestId', verifyAccessTokenMiddleware, async (req: any, 
     }
 });
 
-// NOWE - POST /Messages
+// POST /Messages
 // Dodaj nową wiadomość do zgłoszenia
 router.post('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
-        const authorId = req.user!._id; // Assuming the logged-in user is the author
+        const authorId = req.user!._id; 
         const { request, content } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(request)) {

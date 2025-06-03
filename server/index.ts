@@ -1,4 +1,4 @@
-// server.ts (lub index.ts)
+// index.ts
 import dotenv from 'dotenv';
 dotenv.config();
 

@@ -6,19 +6,18 @@ import Message, { IMessage } from '../models/Message';
 
 const router = Router();
 
-// NOWE - GET /Requests/students/{studentId}
+// GET /Requests/students/{studentId}
 // Pobierz listę zgłoszeń studenta o podanym ID
 router.get('/students/:studentId', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const studentId = req.params.studentId;
-
         if (!mongoose.Types.ObjectId.isValid(studentId)) {
             return res.status(400).json({ message: 'Nieprawidłowy format ID studenta.' });
         }
 
         const requests: IRequest[] = await RequestModel.find({ student: studentId })
             .populate('supervisor')
-            .populate('student'); // Populate supervisor and student details
+            .populate('student'); 
 
         res.status(200).json(requests);
 
@@ -28,7 +27,7 @@ router.get('/students/:studentId', verifyAccessTokenMiddleware, async (req: any,
     }
 });
 
-// NOWE - GET /Requests/supervisors/{supervisorId}
+// GET /Requests/supervisors/{supervisorId}
 // Pobierz listę zgłoszeń dla promotora o podanym ID
 router.get('/supervisors/:supervisorId', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -40,7 +39,7 @@ router.get('/supervisors/:supervisorId', verifyAccessTokenMiddleware, async (req
 
         const requests: IRequest[] = await RequestModel.find({ supervisor: supervisorId })
             .populate('student')
-            .populate('supervisor'); // Populate student and supervisor details
+            .populate('supervisor'); 
 
         res.status(200).json(requests);
 
@@ -50,7 +49,7 @@ router.get('/supervisors/:supervisorId', verifyAccessTokenMiddleware, async (req
     }
 });
 
-// NOWE - GET /Requests/{id}/status
+// GET /Requests/{id}/status
 // Pobierz status zgłoszenia o podanym ID
 router.get('/:id/status', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -74,7 +73,7 @@ router.get('/:id/status', verifyAccessTokenMiddleware, async (req: any, res: any
     }
 });
 
-// NOWE - GET /Requests/{id}/messages
+// GET /Requests/{id}/messages
 // Pobierz listę wiadomości związanych ze zgłoszeniem o podanym ID
 router.get('/:id/messages', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -84,9 +83,8 @@ router.get('/:id/messages', verifyAccessTokenMiddleware, async (req: any, res: a
             return res.status(400).json({ message: 'Nieprawidłowy format ID zgłoszenia.' });
         }
 
-        // Assuming you have a Message model and each message has a 'request' field referencing the Request
         const messages: IMessage[] = await Message.find({ request: requestId })
-            .populate('sender'); // Populate sender details (if needed)
+            .populate('sender'); 
 
         res.status(200).json(messages);
 
@@ -96,13 +94,13 @@ router.get('/:id/messages', verifyAccessTokenMiddleware, async (req: any, res: a
     }
 });
 
-// NOWE - POST /Requests (Create a new request)
+// POST /Requests 
+// Stwórz nowe zgłoszenie 
 router.post('/Requests', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
-        const studentId = req.user!._id; // Get student ID from the authenticated user
+        const studentId = req.user!._id; 
         const { supervisor, thesisTitle, description } = req.body;
 
-        // Validate data
         if (!supervisor || !thesisTitle || !description) {
             return res.status(400).json({ message: 'Wszystkie pola są wymagane.' });
         }
@@ -111,27 +109,23 @@ router.post('/Requests', verifyAccessTokenMiddleware, async (req: any, res: any,
             return res.status(400).json({ message: 'Nieprawidłowy format ID promotora.' });
         }
 
-        // Create new request
         const newRequest: IRequest = new RequestModel({
             student: studentId,
             supervisor,
             thesisTitle,
             description,
-            status: 'pending' // Initial status
+            status: 'pending' 
         });
 
-        // Save request to database
         const savedRequest = await newRequest.save();
-
-        res.status(201).json(savedRequest); // Return the created request
-
+        res.status(201).json(savedRequest); 
     } catch (error) {
         console.error('Błąd podczas tworzenia zgłoszenia:', error);
         res.status(500).json({ message: 'Wystąpił błąd serwera.' });
     }
 });
 
-// NOWE - PUT /Requests/{id}/status
+// PUT /Requests/{id}/status
 // Aktualizuj status zgłoszenia o podanym ID
 router.put('/:id/status', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -142,15 +136,14 @@ router.put('/:id/status', verifyAccessTokenMiddleware, async (req: any, res: any
             return res.status(400).json({ message: 'Nieprawidłowy format ID zgłoszenia.' });
         }
 
-        // Validate status (assuming you have an enum or a set of allowed status values)
-        const allowedStatuses = ['pending', 'approved', 'rejected', 'in_progress', 'completed']; // Example statuses
+        const allowedStatuses = ['pending', 'approved', 'rejected', 'in_progress', 'completed']; 
         if (!allowedStatuses.includes(status)) {
             return res.status(400).json({ message: 'Nieprawidłowy status zgłoszenia.' });
         }
 
         const updatedRequest: IRequest | null = await RequestModel.findByIdAndUpdate(requestId, { status }, { new: true })
             .populate('supervisor')
-            .populate('student'); // Populate details after update
+            .populate('student'); 
 
         if (!updatedRequest) {
             return res.status(404).json({ message: 'Nie znaleziono zgłoszenia.' });
@@ -164,18 +157,16 @@ router.put('/:id/status', verifyAccessTokenMiddleware, async (req: any, res: any
     }
 });
 
-// NOWE - DELETE /Requests/{id}
+// DELETE /Requests/{id}
 // Usuń zgłoszenie o podanym ID
 router.delete('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const requestId = req.params.id;
-
         if (!mongoose.Types.ObjectId.isValid(requestId)) {
             return res.status(400).json({ message: 'Nieprawidłowy format ID zgłoszenia.' });
         }
 
         const deletedRequest: IRequest | null = await RequestModel.findByIdAndDelete(requestId);
-
         if (!deletedRequest) {
             return res.status(404).json({ message: 'Nie znaleziono zgłoszenia.' });
         }

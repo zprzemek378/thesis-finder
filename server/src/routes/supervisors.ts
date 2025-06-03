@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 
 const router = Router();
 
-// NOWE - GET /Supervisors
+// GET /Supervisors
 // Pobierz listę wszystkich promotorów
 router.get('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -19,7 +19,7 @@ router.get('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: Ne
     }
 });
 
-// NOWE - GET /Supervisors/{id}
+// GET /Supervisors/{id}
 // Pobierz promotora po ID
 router.get('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -38,7 +38,7 @@ router.get('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next:
     }
 });
 
-// NOWE - GET /Supervisors/{id}/theses
+// GET /Supervisors/{id}/theses
 // Pobierz prace dyplomowe promotora o podanym ID
 router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -54,7 +54,7 @@ router.get('/:id/theses', verifyAccessTokenMiddleware, async (req: any, res: any
     }
 });
 
-// NOWE - GET /Supervisors/{id}/requests
+// GET /Supervisors/{id}/requests
 // Pobierz listę zapytań (propozycji prac) od studentów do promotora o podanym ID
 router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
@@ -63,7 +63,7 @@ router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: any, res: a
             return res.status(400).json({ message: 'Nieprawidłowy format ID promotora.' });
         }
         const requests: IRequest[] = await RequestModel.find({ supervisor: supervisorId })
-            .populate('student'); // Populate student details for context
+            .populate('student'); 
         res.status(200).json(requests);
     } catch (error) {
         console.error('Błąd podczas pobierania zapytań do promotora:', error);
@@ -71,8 +71,8 @@ router.get('/:id/requests', verifyAccessTokenMiddleware, async (req: any, res: a
     }
 });
 
-// NOWE - GET /Supervisors/{id}/availability
-// Pobierz informacje o dostępności promotora (zakładamy, że promotor ma pole 'availability' w swoim modelu)
+// GET /Supervisors/{id}/availability
+// Pobierz informacje o dostępności promotora 
 router.get('/:id/availability', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.id;
@@ -83,21 +83,19 @@ router.get('/:id/availability', verifyAccessTokenMiddleware, async (req: any, re
         if (!supervisor) {
             return res.status(404).json({ message: 'Nie znaleziono promotora.' });
         }
-        // Zakładamy, że model ISupervisor ma pole 'availability' (np. string, boolean, lub obiekt)
-        res.status(200).json({ availability: supervisor!.availability }); // Non-null assertion here
+        res.status(200).json({ availability: supervisor!.availability }); 
     } catch (error) {
         console.error('Błąd podczas pobierania dostępności promotora:', error);
         res.status(500).json({ message: 'Wystąpił błąd serwera.' });
     }
 });
 
-// NOWE - PUT /Supervisors/{id}
-// Aktualizuj dane promotora o podanym ID (dostępne tylko dla administratora)
+// PUT /Supervisors/{id}
+// Aktualizuj dane promotora o podanym ID (tylko dla administratora)
 router.put('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.id;
-        const userRole = req.user!.role; // Załóżmy, że rola użytkownika jest dostępna w req.user
-
+        const userRole = req.user!.role; 
         if (userRole !== 'ADMIN') {
             return res.status(403).json({ message: 'Brak uprawnień do aktualizacji promotora.' });
         }
@@ -120,13 +118,12 @@ router.put('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next:
     }
 });
 
-// NOWE - DELETE /Supervisors/{id}
+// DELETE /Supervisors/{id}
 // Usuń promotora o podanym ID (dostępne tylko dla administratora)
 router.delete('/:id', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
         const supervisorId = req.params.id;
-        const userRole = req.user!.role; // Załóżmy, że rola użytkownika jest dostępna w req.user
-
+        const userRole = req.user!.role;
         if (userRole !== 'ADMIN') {
             return res.status(403).json({ message: 'Brak uprawnień do usunięcia promotora.' });
         }

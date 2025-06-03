@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema<IUser>({
   chats: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chat', default: null }],
 });
 
-// hashowanie
+// logika hashowania
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt_number = process.env.SALT_NUMBER || '10';

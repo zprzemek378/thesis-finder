@@ -1,6 +1,8 @@
 // src/routes/auth.ts
 import { Router, Request, NextFunction } from 'express';
 import User, { IUser } from '../models/User';
+import Student from '../models/Student';
+import Supervisor from '../models/Supervisor';
 import { verifyAccessTokenMiddleware } from '../middlewares/auth';
 import {
   signAccessToken,
@@ -10,10 +12,8 @@ import {
 
 const router = Router();
 
-// Rejestracja
-import Student from '../models/Student';
-import Supervisor from '../models/Supervisor';
-
+// POST /register
+// Rejestracja nowego użytkownika
 router.post('/register', async (req: any, res: any) => {
   const { firstName, lastName, email, password, faculty, role, studentData, supervisorData } = req.body;
   console.log("Request body:", req.body); 
@@ -25,13 +25,11 @@ router.post('/register', async (req: any, res: any) => {
     let studentId = null;
     let supervisorId = null;
 
-    // Dodanie studenta jeśli są dane
     if (role === 'STUDENT' && studentData) {
       const newStudent = await Student.create(studentData);
       studentId = newStudent._id;
     }
 
-    // Dodanie promotora jeśli są dane
     if (role === 'SUPERVISOR' && supervisorData) {
       const newSupervisor = await Supervisor.create(supervisorData);
       supervisorId = newSupervisor._id;
@@ -46,7 +44,7 @@ router.post('/register', async (req: any, res: any) => {
       role,
       student: studentId,
       supervisor: supervisorId,
-      chats: [], // pusta tablica
+      chats: [], 
     });
 
     res.status(201).json({ id: user._id });
@@ -56,9 +54,8 @@ router.post('/register', async (req: any, res: any) => {
   }
 });
 
-  
-
-// Logowanie
+// POST /login
+// Logowanie użytkownika
 router.post('/login', async (req: any, res: any) => {
   const { email, password } = req.body;
   try {
@@ -78,6 +75,7 @@ router.post('/login', async (req: any, res: any) => {
   }
 });
 
+// POST /refresh
 // Odświeżanie tokena
 router.post('/refresh', async (req: any, res: any) => {
   const token = req.cookies.jid;
@@ -99,30 +97,26 @@ router.post('/refresh', async (req: any, res: any) => {
   }
 });
 
-// Wylogowanie
+// POST /logout
+// Wylogowanie użytkownika
 router.post('/logout', (_req, res) => {
   res.clearCookie('jid', { path: '/auth/refresh' }).json({ success: true });
 });
 
-// NOWE - GET /auth/me
+// GET /auth/me
 // Pobranie informacji o zalogowanym użytkowniku
 router.get('/me', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
   try {
-    // Type assertion to tell TypeScript that req.user is definitely an IUser
     const userId = (req.user as IUser)?._id;
-
     if (!userId) {
       return res.status(401).json({ message: 'Nieautoryzowany dostęp.' });
     }
 
-    // Znajdź pełne dane użytkownika w bazie danych, wykluczając hasło
-    const user: IUser | null = await User.findById(userId).select('-password'); // Explicitly type user as IUser | null
-
+    const user: IUser | null = await User.findById(userId).select('-password'); 
     if (!user) {
       return res.status(404).json({ message: 'Nie znaleziono użytkownika.' });
     }
 
-    // Zwróć dane użytkownika
     res.status(200).json(user);
 
   } catch (error) {

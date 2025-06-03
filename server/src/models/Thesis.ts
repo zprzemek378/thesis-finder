@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 export interface IThesis extends mongoose.Document {
     title: string;
     description: string;
-    degree: 'FIRST_CYCLE' | 'SECOND_CYCLE';                         // chodzi o 1 oraz 2 stopnia
+    degree: 'BACHELOR' | 'MASTER' | 'DOCTORAL' | 'POSTGRADUATE';                         
     field: string;
     supervisor: mongoose.Types.ObjectId;
     students: mongoose.Types.ObjectId[];
@@ -20,7 +20,7 @@ const thesisSchema = new mongoose.Schema<IThesis>({
     description: { type: String, required: true },
     degree: { 
         type: String,
-        enum: ['FIRST_CYCLE', 'SECOND_CYCLE'],
+        enum: ['BACHELOR', 'MASTER', 'DOCTORAL', 'POSTGRADUATE'],
         required: true
     },
     field: { type: String, required: true },
