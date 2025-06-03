@@ -35,7 +35,6 @@ app.use('/messages', messagesRouter);
 
 // Example protected route
 app.get("/protected", (req: any, res: any) => {
-  // @ts-ignore - verifyAccessToken attaches req.user
   res.json({ message: 'Access granted', user: req.user });
 });
 

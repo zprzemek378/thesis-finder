@@ -1,48 +1,45 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-import { IUser } from './User'; // Import IUser for supervisor and student
-import { IThesis } from './Thesis'; // Import IThesis if you want to link to a thesis
+// src/models/Request.ts
+import mongoose from 'mongoose';
 
-export interface IRequest extends Document {
-    student: Types.ObjectId | IUser; // Reference to the student
-    supervisor: Types.ObjectId | IUser; // Reference to the supervisor
-    thesisTitle: string; // Title of the proposed thesis
-    description: string; // Detailed description of the proposal
-    status: string; // e.g., 'pending', 'approved', 'rejected'
+export interface IRequest extends mongoose.Document {
+    student: mongoose.Types.ObjectId;
+    supervisor: mongoose.Types.ObjectId;
+    thesis?: mongoose.Types.ObjectId; 
+    content?: string; 
+    status: 'PENDING' | 'APPROVED' | 'REJECTED'; 
+    type: 'THESIS_ENROLLMENT' | 'OWN_THESIS_PROPOSAL' | 'OTHER'; 
     createdAt: Date;
     updatedAt: Date;
-    thesis?: Types.ObjectId | IThesis; // Optional: Link to an existing Thesis
 }
 
-const requestSchema: Schema<IRequest> = new Schema<IRequest>({ // Explicit type for Schema
+const requestSchema = new mongoose.Schema<IRequest>({
     student: {
-        type: mongoose.Schema.Types.ObjectId, // Use mongoose.Schema.Types
-        ref: 'User',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Student",
         required: true
     },
     supervisor: {
-        type: mongoose.Schema.Types.ObjectId, // Use mongoose.Schema.Types
-        ref: 'User',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Supervisor",
         required: true
     },
-    thesisTitle: {
-        type: String,
-        required: true
+    thesis: { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Thesis",
+        required: false
     },
-    description: {
-        type: String,
-        required: true
-    },
+    content: { type: String },
     status: {
         type: String,
-        enum: ['pending', 'approved', 'rejected'],
-        default: 'pending'
+        enum: ['PENDING', 'APPROVED', 'REJECTED'],
+        default: 'PENDING',
+        required: true
     },
-    thesis: {
-        type: mongoose.Schema.Types.ObjectId, // Use mongoose.Schema.Types
-        ref: 'Thesis',
-        default: null
+    type: { 
+        type: String,
+        enum: ['THESIS_ENROLLMENT', 'OWN_THESIS_PROPOSAL', 'OTHER'],
+        required: true
     }
 }, { timestamps: true });
 
-const RequestModel = mongoose.model<IRequest>('Request', requestSchema);
-export default RequestModel;
+export default mongoose.model<IRequest>("Request", requestSchema);
