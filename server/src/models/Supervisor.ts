@@ -7,6 +7,7 @@ export interface ISupervisor extends mongoose.Document {
     selfInterests: string[]; 
     availability: string;
     thesisList: mongoose.Types.ObjectId[]; 
+    allowedFields: string[];
 }
 
 const supervisorSchema = new mongoose.Schema<ISupervisor>({
@@ -24,6 +25,7 @@ const supervisorSchema = new mongoose.Schema<ISupervisor>({
         default: [] 
     }],
     availability: { type: String },
+    allowedFields: [{ type: String, default: [] }],
 });
 
 export default mongoose.model<ISupervisor>("Supervisor", supervisorSchema);

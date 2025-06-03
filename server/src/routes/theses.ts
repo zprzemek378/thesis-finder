@@ -55,6 +55,11 @@ router.post('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: N
             return res.status(400).json({ message: `Promotor (${supervisorProfile.academicTitle}) osiągnął limit ${thesisLimit} prac dyplomowych stopnia ${degree === 'FIRST_CYCLE' ? 'I' : 'II'}.` });
         }
         
+        if (!Array.isArray(supervisorProfile.allowedFields) || !supervisorProfile.allowedFields.includes(field)) {
+            // Jeśli chcemy, aby puste allowedFields oznaczało BRAK OGRANICZEŃ, to musimy zmienić warunek na: if (supervisorProfile.allowedFields.length > 0 && !supervisorProfile.allowedFields.includes(field)) { ... }
+            return res.status(400).json({ message: `Promotor nie jest uprawniony do prowadzenia prac w dziale: "${field}". Dozwolone działy: ${supervisorProfile.allowedFields.join(', ')}.` });
+        }
+
         const studentsToAssign: mongoose.Types.ObjectId[] = [];
         if (initialStudentIds && initialStudentIds.length > 0) {
             for (const studentId of initialStudentIds) {
