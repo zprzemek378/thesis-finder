@@ -16,25 +16,16 @@ const router = Router();
 // Rejestracja nowego użytkownika
 router.post('/register', async (req: any, res: any) => {
   const { firstName, lastName, email, password, faculty, role, studentData, supervisorData } = req.body;
-  console.log("Request body:", req.body); 
 
   try {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: 'Email zajęty' });
 
+    // Tworzymy pusty obiekt, żeby przypisać ID po kolei
     let studentId = null;
     let supervisorId = null;
 
-    if (role === 'STUDENT' && studentData) {
-      const newStudent = await Student.create(studentData);
-      studentId = newStudent._id;
-    }
-
-    if (role === 'SUPERVISOR' && supervisorData) {
-      const newSupervisor = await Supervisor.create(supervisorData);
-      supervisorId = newSupervisor._id;
-    }
-
+    // Tworzymy użytkownika jako pierwszy krok
     const user = await User.create({
       firstName,
       lastName,
@@ -42,10 +33,31 @@ router.post('/register', async (req: any, res: any) => {
       password,
       faculty,
       role,
-      student: studentId,
-      supervisor: supervisorId,
       chats: [], 
     });
+
+    // Student
+    if (role === 'STUDENT' && studentData) {
+      const newStudent = await Student.create(studentData);
+      studentId = newStudent._id;
+
+      // Dodajemy referencję w User
+      user.student = studentId as any; // <-- KLUCZOWE
+      await user.save();
+    }
+
+    // Supervisor
+    if (role === 'SUPERVISOR' && supervisorData) {
+      const newSupervisor = await Supervisor.create({
+        ...supervisorData,
+        userId: user._id, // <-- KLUCZOWE
+      });
+      supervisorId = newSupervisor._id;
+
+      // Dodajemy referencję w User
+      user.supervisor = supervisorId as any;
+      await user.save();
+    }
 
     res.status(201).json({ id: user._id });
   } catch (err) {
@@ -54,26 +66,42 @@ router.post('/register', async (req: any, res: any) => {
   }
 });
 
+
 // POST /login
 // Logowanie użytkownika
 router.post('/login', async (req: any, res: any) => {
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password)))
-      return res.status(401).json({ message: 'Nieprawidłowe dane' });
+
+    if (!user) {
+      console.warn(`Użytkownik o emailu ${email} nie istnieje`);
+      return res.status(401).json({ message: 'Nieprawidłowe dane logowania (email)' });
+    }
+
+    const passwordMatch = await user.comparePassword(password);
+    if (!passwordMatch) {
+      console.warn(`Nieprawidłowe hasło dla użytkownika ${email}`);
+      return res.status(401).json({ message: 'Nieprawidłowe dane logowania (hasło)' });
+    }
 
     const accessToken = signAccessToken(user);
     const refreshToken = signRefreshToken(user);
 
-    // wysyłamy access jako JSON, refresh w cookie http-only:
     res
       .cookie('jid', refreshToken, { httpOnly: true, path: '/auth/refresh' })
       .json({ accessToken });
-  } catch {
-    res.status(500).json({ message: 'Błąd serwera' });
+
+  } catch (error: any) {
+    console.error('Błąd podczas logowania:', error);
+    res.status(500).json({
+      message: 'Błąd serwera',
+      error: error.message || 'Nieznany błąd',
+    });
   }
 });
+
 
 // POST /refresh
 // Odświeżanie tokena
