@@ -1,9 +1,10 @@
+// src/models/Chat.ts
 import mongoose from 'mongoose';
 
 export interface IChat extends mongoose.Document {
-  title: string;
-  messages: mongoose.Types.ObjectId[];
-  members: mongoose.Types.ObjectId[];
+    title: string;
+    messages: mongoose.Types.ObjectId[];
+    members: mongoose.Types.ObjectId[];
 }
 
 const chatSchema = new mongoose.Schema<IChat>({

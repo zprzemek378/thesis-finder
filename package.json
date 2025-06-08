@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "cd server && node index.ts",
+    "server": "cd server && ts-node index.ts",
     "client": "cd client && npm run dev"
   },
   "repository": {
@@ -26,12 +26,22 @@
   "description": "",
   "devDependencies": {
     "@types/node": "^22.14.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.18",
+    "@types/jsonwebtoken": "^9.0.9",
     "concurrently": "^9.1.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "@radix-ui/react-scroll-area": "^1.2.8",
     "@tailwindcss/vite": "^4.1.4",
-    "tailwindcss": "^4.1.4"
+    "tailwindcss": "^4.1.4",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.0"
   }
 }
