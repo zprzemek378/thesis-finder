@@ -233,7 +233,7 @@ const AddThesis = () => {
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-md p-8 md:w-7xl">
           <h2 className="text-2xl font-bold text-center text-[var(--o-blue)] mb-8">
-            Tworzenie nowej oferty pracy dyplomowej
+            Propozycja nowego tematu pracy dyplomowej
           </h2>
 
           <h3 className="text-xl font-bold text-[var(--o-blue)] mb-8">

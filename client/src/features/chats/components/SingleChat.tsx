@@ -3,6 +3,7 @@ import * as Separator from "@radix-ui/react-separator";
 import SendIcon from "./SendIcon";
 import MessageBar from "./MessageBar";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
+import { useEffect, useRef } from "react";
 
 const user = "Jan Kowalski";
 
@@ -64,6 +65,15 @@ const exampleConversation = [
 ];
 
 const SingleChat = () => {
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (viewport) {
+      viewport.scrollTop = viewport.scrollHeight;
+    }
+  }, []); // TODO do dependencies dodać gdy pojawi się nowa wiadomość
+
   return (
     <div className="md:col-span-5 flex-1 min-h-0">
       <div className="bg-white rounded-lg shadow-md h-full flex flex-col overflow-hidden">
@@ -71,7 +81,7 @@ const SingleChat = () => {
         <Separator.Root className="h-px bg-gray-200" />
 
         <ScrollArea.Root className="flex-1 min-h-0">
-          <ScrollArea.Viewport className="h-full w-full">
+          <ScrollArea.Viewport className="h-full w-full" ref={viewportRef}>
             <div className="p-6 gap-3 flex flex-col">
               {exampleConversation.map((m) => (
                 <MessageBar message={m} />
