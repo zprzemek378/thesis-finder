@@ -9,6 +9,8 @@ import {
   FACULTIES,
   STUDIES_TYPES,
   DEGREES,
+  SERVER_URL,
+  PORT,
 } from "../../../../../shared/constants";
 import type {
   Faculty,
@@ -169,7 +171,6 @@ const Register = () => {
     if (validateForm()) {
       setIsLoading(true);
       try {
-        // Prepare data
         const registerData = {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -188,7 +189,7 @@ const Register = () => {
           supervisorData: formData.role === "SUPERVISOR" ? {} : undefined,
         };
 
-        const response = await fetch("http://127.0.0.1:3000/auth/register", {
+        const response = await fetch(`${SERVER_URL}:${PORT}/auth/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -202,7 +203,6 @@ const Register = () => {
           throw new Error(data.message || "Błąd rejestracji");
         }
 
-        // Przekieruj do strony logowania
         navigate("/login", {
           state: {
             message:
