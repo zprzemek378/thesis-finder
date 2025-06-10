@@ -7,13 +7,24 @@ import mongoose from 'mongoose';
 
 const router = Router();
 
-router.get('/', verifyAccessTokenMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/', verifyAccessTokenMiddleware, async (req: Request, res: Response) => {
     try {
-        const { degree, field } = req.query;
-        let filter: any = {};
+        const { degree, field, status, tags, supervisor } = req.query;
+        const filter: any = {};
 
         if (degree) filter.degree = degree;
         if (field) filter.field = field;
+        if (status) filter.status = status;
+        if (tags) {
+            if (Array.isArray(tags)) {
+                filter.tags = { $in: tags };
+            } else if (typeof tags === 'string') {
+                filter.tags = { $in: [tags] };
+            }
+        }
+        if (supervisor && mongoose.Types.ObjectId.isValid(supervisor.toString())) {
+            filter.supervisor = supervisor;
+        }
 
         const theses: IThesis[] = await Thesis.find(filter)
             .populate('supervisor')
