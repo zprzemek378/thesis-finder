@@ -2,9 +2,8 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { IUser } from '../models/User';
 
-const jwtSecret = process.env.JWT_SECRET as string;
-const refreshSecret = process.env.REFRESH_SECRET || jwtSecret;
-
+const jwtSecret = process.env.JWT_SECRET || 'default_jwt_secret';
+const refreshSecret = process.env.REFRESH_SECRET || 'default_refresh_secret'
 
 const accessTokenOptions: SignOptions = {
   expiresIn: process.env.JWT_EXPIRES as any|| '15m'
