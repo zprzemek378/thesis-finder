@@ -43,11 +43,54 @@ export const STUDIES_TYPES = [
 
 export const STUDIES_TYPES_VALUES = STUDIES_TYPES.map((t) => t.value);
 
+export const FIELDS_OF_STUDY: Record<
+  string,
+  { value: string; label: string }[]
+> = {
+  WEAIiIB: [
+    { value: "ET", label: "Elektrotechnika" },
+    { value: "AiR", label: "Automatyka i Robotyka" },
+    { value: "IB", label: "Inżynieria Biomedyczna" },
+  ],
+  WIEiT: [
+    { value: "INFA", label: "Informatyka" },
+    { value: "ELE", label: "Elektronika" },
+    { value: "TEL", label: "Telekomunikacja" },
+  ],
+  WGGiIŚ: [
+    { value: "GiK", label: "Geodezja i Kartografia" },
+    { value: "IiMŚ", label: "Inżynieria i Monitoring Środowiska" },
+  ],
+  WIMiIP: [
+    { value: "IM", label: "Inżynieria Metali" },
+    { value: "IP", label: "Informatyka Przemysłowa" },
+  ],
+  WIMiR: [
+    { value: "MiBM", label: "Mechanika i Budowa Maszyn" },
+    { value: "RiA", label: "Robotyka i Automatyka" },
+  ],
+  WFiIS: [
+    { value: "FT", label: "Fizyka Techniczna" },
+    { value: "IS", label: "Informatyka Stosowana" },
+  ],
+  WH: [
+    { value: "SOC", label: "Socjologia" },
+    { value: "KUL", label: "Kulturoznawstwo" },
+    { value: "IS", label: "Informatyka Społeczna" },
+  ],
+} as const;
+
+export const THESIS_STATUS = {
+  FREE: "FREE",
+  TAKEN: "TAKEN",
+  COMPLETED: "COMPLETED",
+} as const;
+
 export const DEGREES = [
-  { value: "I", label: "I stopnia" },
-  { value: "II", label: "II stopnia" },
-  { value: "III", label: "III stopnia" },
-  { value: "jednolite", label: "Jednolite magisterskie" },
+  { value: "BACHELOR", label: "I stopnia (inżynierskie/licencjackie)" },
+  { value: "MASTER", label: "II stopnia (magisterskie)" },
+  { value: "DOCTORAL", label: "III stopnia (doktoranckie)" },
+  { value: "POSTGRADUATE", label: "Podyplomowe" },
 ] as const;
 
 export const DEGREES_VALUES = DEGREES.map((d) => d.value);
