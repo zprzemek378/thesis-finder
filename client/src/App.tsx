@@ -6,6 +6,7 @@ import Login from "./features/auth/pages/Login";
 import Register from "./features/auth/pages/Register";
 import Chats from "./features/chats/pages/Chats";
 import AddThesis from "./features/add-thesis/AddThesis";
+import MyTheses from "./features/my-theses/MyTheses";
 
 function App() {
   return (
@@ -14,7 +15,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/thesis/:id" element={<ThesisDetails />} />
         <Route path="/search" element={<Home />} />
-        <Route path="/my-theses" element={<Home />} />
+        <Route path="/my-theses" element={<MyTheses />} />
         <Route path="/saved" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

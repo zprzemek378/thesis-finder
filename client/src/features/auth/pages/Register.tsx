@@ -31,6 +31,7 @@ interface FormData {
   degree: Degree;
   studiesType: StudiesType;
   studiesStartDate: string;
+  academicTitle: string;
 }
 
 interface FormErrors {
@@ -45,6 +46,7 @@ interface FormErrors {
   degree: string;
   studiesType: string;
   studiesStartDate: string;
+  academicTitle: string;
 }
 
 const Register = () => {
@@ -61,6 +63,7 @@ const Register = () => {
     degree: "" as Degree,
     studiesType: "" as StudiesType,
     studiesStartDate: "",
+    academicTitle: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({
@@ -75,6 +78,7 @@ const Register = () => {
     degree: "",
     studiesType: "",
     studiesStartDate: "",
+    academicTitle: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -94,6 +98,7 @@ const Register = () => {
       degree: "",
       studiesType: "",
       studiesStartDate: "",
+      academicTitle: "",
     };
 
     if (!formData.firstName) {
@@ -160,6 +165,13 @@ const Register = () => {
       }
     }
 
+    if (formData.role === "SUPERVISOR") {
+      if (!formData.academicTitle) {
+        newErrors.academicTitle = "Wybierz tytuł naukowy";
+        isValid = false;
+      }
+    }
+
     setErrors(newErrors);
     return isValid;
   };
@@ -186,7 +198,12 @@ const Register = () => {
                   studiesStartDate: formData.studiesStartDate,
                 }
               : undefined,
-          supervisorData: formData.role === "SUPERVISOR" ? {} : undefined,
+          supervisorData:
+            formData.role === "SUPERVISOR"
+              ? {
+                  academicTitle: formData.academicTitle,
+                }
+              : undefined,
         };
 
         const response = await fetch(`${SERVER_URL}:${PORT}/auth/register`, {
@@ -584,6 +601,33 @@ const Register = () => {
                       {errors.studiesStartDate && (
                         <p className="mt-1 text-sm text-red-500">
                           {errors.studiesStartDate}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {formData.role === "SUPERVISOR" && (
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <label
+                        htmlFor="academicTitle"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Tytuł:
+                      </label>
+                      <Input
+                        type="text"
+                        id="academicTitle"
+                        name="academicTitle"
+                        value={formData.academicTitle}
+                        onChange={handleChange}
+                        error={!!errors.academicTitle}
+                        disabled={isLoading}
+                      />
+                      {errors.firstName && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {errors.academicTitle}
                         </p>
                       )}
                     </div>

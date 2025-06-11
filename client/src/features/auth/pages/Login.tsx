@@ -65,6 +65,7 @@ const Login = () => {
         }
 
         localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("user", JSON.stringify(data.user));
 
         navigate("/");
       } catch (error) {
