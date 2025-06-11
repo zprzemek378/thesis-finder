@@ -128,9 +128,9 @@ router.post(
   async (req: any, res: any, next: NextFunction) => {
     try {
       const userId = req.user!._id;
-      const { supervisor, thesisTitle, description } = req.body;
+      const { supervisor, thesisTitle, description, thesisId } = req.body;
 
-      if (!supervisor || !thesisTitle || !description) {
+      if (!supervisor || !thesisTitle || !description || !thesisId) {
         return res.status(400).json({ message: "Wszystkie pola są wymagane." });
       }
 
@@ -140,11 +140,7 @@ router.post(
           .json({ message: "Nieprawidłowy format ID promotora." });
       }
 
-      console.log("Looking for user with ID:", userId);
-
-      // Znajdź profil studenta powiązany z zalogowanym użytkownikiem
       const user = await User.findById(userId).populate("student");
-      console.log("Found user:", user);
 
       if (!user || !user.student) {
         return res
@@ -152,14 +148,13 @@ router.post(
           .json({ message: "Nie znaleziono profilu studenta." });
       }
 
-      console.log("Found student profile:", user.student);
-
       const newRequest: IRequest = new RequestModel({
         student: user.student,
         supervisor,
         content: `${thesisTitle}\n\n${description}`,
         status: "PENDING",
         type: "THESIS_ENROLLMENT",
+        thesisId,
       });
 
       const savedRequest = await newRequest.save();
@@ -180,7 +175,7 @@ router.put(
   async (req: any, res: any, next: NextFunction) => {
     try {
       const requestId = req.params.id;
-      const { status } = req.body;
+      const { status, thesisId } = req.body;
 
       if (!mongoose.Types.ObjectId.isValid(requestId)) {
         return res
@@ -212,6 +207,24 @@ router.put(
 
       if (!updatedRequest) {
         return res.status(404).json({ message: "Nie znaleziono zgłoszenia." });
+      }
+
+      if (status === "APPROVED") {
+        const studentId = updatedRequest.student?._id;
+
+        console.log(studentId, thesisId);
+
+        if (thesisId && studentId) {
+          const Thesis = require("../models/Thesis").default;
+          const thesis = await Thesis.findById(thesisId);
+
+          if (thesis) {
+            if (!thesis.students.includes(studentId)) {
+              thesis.students.push(studentId);
+              await thesis.save();
+            }
+          }
+        }
       }
 
       res.status(200).json(updatedRequest);

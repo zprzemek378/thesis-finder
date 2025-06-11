@@ -4,6 +4,7 @@ import Thesis, { IThesis } from "../models/Thesis";
 import Student, { IStudent } from "../models/Student";
 import Supervisor, { ISupervisor } from "../models/Supervisor";
 import mongoose from "mongoose";
+import User from "../models/User";
 
 const router = Router();
 
@@ -66,7 +67,23 @@ router.get(
           .json({ message: "Nie znaleziono pracy dyplomowej." });
       }
 
-      res.status(200).json(thesis);
+      const studentsWithUser = await Promise.all(
+        thesis.students.map(async (student: any) => {
+          const user = await User.findOne({ student: student._id });
+          return {
+            ...student.toObject(),
+            user: user ? user.toObject() : null,
+          };
+        })
+      );
+
+      // Zbuduj nowy obiekt thesis z rozszerzonymi danymi studentów
+      const thesisWithStudents = {
+        ...thesis.toObject(),
+        students: studentsWithUser,
+      };
+
+      res.status(200).json(thesisWithStudents);
     } catch (error) {
       console.error("Błąd podczas pobierania pracy dyplomowej po ID:", error);
       res.status(500).json({ message: "Wystąpił błąd serwera." });

@@ -61,6 +61,7 @@ const MyTheses = () => {
 
   const handleRequestAction = async (
     requestId: string,
+    thesisId: string,
     status: "APPROVED" | "REJECTED"
   ) => {
     try {
@@ -70,7 +71,7 @@ const MyTheses = () => {
         return;
       }
 
-      await updateRequestStatus(requestId, status, token);
+      await updateRequestStatus(requestId, thesisId, status, token);
 
       // Update local state to reflect the change
       setRequests((prevRequests) =>
@@ -176,7 +177,11 @@ const MyTheses = () => {
                   <div className="flex space-x-2 pt-2">
                     <Button
                       onClick={() =>
-                        handleRequestAction(request._id, "APPROVED")
+                        handleRequestAction(
+                          request._id,
+                          request.thesisId,
+                          "APPROVED"
+                        )
                       }
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
@@ -184,7 +189,11 @@ const MyTheses = () => {
                     </Button>
                     <Button
                       onClick={() =>
-                        handleRequestAction(request._id, "REJECTED")
+                        handleRequestAction(
+                          request._id,
+                          request.thesisId,
+                          "REJECTED"
+                        )
                       }
                       className="flex-1 bg-red-600 hover:bg-red-700"
                     >

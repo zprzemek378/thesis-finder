@@ -9,10 +9,10 @@ interface UserCardProps {
 const UserCard = ({ user, description }: UserCardProps) => {
   return (
     <div className="p-4 border-b last:border-b-0">
-      <p className="font-medium">{user.firstName} {user.lastName}</p>
-      {description && (
-        <p className="text-sm text-gray-600">{description}</p>
-      )}
+      <p className="font-medium">
+        {user.user.firstName} {user.user.lastName}
+      </p>
+      {description && <p className="text-sm text-gray-600">{description}</p>}
     </div>
   );
 };

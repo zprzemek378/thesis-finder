@@ -11,6 +11,23 @@ interface ThesesQueryParams {
   supervisor?: string;
 }
 
+interface ChatAuthor {
+  _id: string;
+  firstName: string;
+  lastName: string;
+}
+
+interface ChatHeader {
+  chatId: string;
+  title: string;
+  members: ChatAuthor[];
+  lastMessage: {
+    content: string;
+    date: string;
+    author: ChatAuthor;
+  } | null;
+}
+
 export const createThesisRequest = async (thesis: Thesis, token: string) => {
   const response = await fetch(`${API_URL}/requests/Requests`, {
     method: "POST",
@@ -22,6 +39,7 @@ export const createThesisRequest = async (thesis: Thesis, token: string) => {
       supervisor: thesis.supervisor._id,
       thesisTitle: thesis.title,
       description: `Prośba o dołączenie do pracy dyplomowej "${thesis.title}"`,
+      thesisId: thesis._id,
     }),
   });
 
@@ -173,6 +191,7 @@ export const getSupervisorRequests = async (
 
 export const updateRequestStatus = async (
   requestId: string,
+  thesisId: string,
   status: string,
   token: string
 ) => {
@@ -182,7 +201,7 @@ export const updateRequestStatus = async (
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, thesisId }),
   });
 
   if (!response.ok) {
