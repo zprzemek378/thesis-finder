@@ -168,9 +168,10 @@ router.get(
         return res.status(401).json({ message: "Nieautoryzowany dostęp." });
       }
 
-      const user: IUser | null = await User.findById(userId).select(
-        "-password"
-      );
+      const user: IUser | null = await User.findById(userId)
+        .select("-password")
+        .populate("student")
+        .populate("supervisor");
       if (!user) {
         return res.status(404).json({ message: "Nie znaleziono użytkownika." });
       }

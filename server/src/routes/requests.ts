@@ -123,7 +123,7 @@ router.get(
 // POST /Requests
 // Stwórz nowe zgłoszenie
 router.post(
-  "/Requests",
+  "/",
   verifyAccessTokenMiddleware,
   async (req: any, res: any, next: NextFunction) => {
     try {

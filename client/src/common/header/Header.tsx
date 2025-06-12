@@ -24,6 +24,7 @@ const Header = () => {
 
       if (response.ok) {
         localStorage.removeItem("accessToken");
+        localStorage.removeItem("user"); 
         setIsLoggedIn(false);
         navigate("/");
       }
@@ -87,6 +88,9 @@ const Header = () => {
               </NavButton>
               <NavButton to="/add-thesis" pathname={pathname}>
                 Dodaj pracę
+              </NavButton>
+              <NavButton to="/profile" pathname={pathname}>
+                Profil
               </NavButton>
             </>
           )}
