@@ -37,10 +37,19 @@ router.get(
         .populate("supervisor")
         .populate("students");
 
-      // Modyfikuj status każdej pracy na podstawie wolnych miejsc
-      const modifiedTheses = theses.map((thesis) => {
+      // Modyfikuj status każdej pracy i dodaj dane użytkowników
+      const modifiedTheses = await Promise.all(theses.map(async (thesis) => {
         const availableSpots = thesis.studentsLimit - thesis.students.length;
         const thesisObj = thesis.toObject();
+
+        // Pobierz dane użytkownika dla supervisora bezpośrednio z bazy
+        const supervisorUser = await User.findOne({
+          supervisor: thesis.supervisor._id,
+        });
+        thesisObj.supervisor = {
+          ...thesisObj.supervisor,
+          user: supervisorUser ? supervisorUser.toObject() : null
+        };
 
         // Aktualizuj status na podstawie dostępnych miejsc
         if (availableSpots === 0) {
@@ -56,7 +65,7 @@ router.get(
         thesisObj.availableSpots = availableSpots;
 
         return thesisObj;
-      });
+      }));
 
       // Filtruj po statusie, jeśli został podany w query
       const finalTheses = status
