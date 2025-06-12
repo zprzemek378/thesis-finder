@@ -3,6 +3,7 @@ import { Request } from "../types/request";
 import { ProfileUser } from "../types/profile";
 
 const API_URL = "http://localhost:3000";
+
 export const API_BASE_URL = `${API_URL}/api`;
 
 interface ThesesQueryParams {
@@ -387,6 +388,25 @@ export const sendChatMessage = async (
     const error = await response.json();
     throw new Error(
       error.message || "Wystąpił błąd podczas wysyłania wiadomości."
+    );
+  }
+
+  return response.json();
+};
+
+export const getSupervisors = async (token: string) => {
+  const response = await fetch(`${API_URL}/supervisors`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || "Wystąpił błąd podczas pobierania listy promotorów."
     );
   }
 

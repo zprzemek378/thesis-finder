@@ -1,4 +1,4 @@
-import { Router, NextFunction } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { verifyAccessTokenMiddleware } from "../middlewares/auth";
 import Supervisor, { ISupervisor } from "../models/Supervisor";
 import Thesis, { IThesis } from "../models/Thesis";
@@ -13,10 +13,25 @@ const router = Router();
 router.get(
   "/",
   verifyAccessTokenMiddleware,
-  async (req: any, res: any, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     try {
       const supervisors: ISupervisor[] = await Supervisor.find();
-      res.status(200).json(supervisors);
+
+      // Pobierz dane użytkowników dla wszystkich promotorów
+      const supervisorsWithUsers = await Promise.all(
+        supervisors.map(async (supervisor) => {
+          const supervisorUser = await User.findOne({
+            supervisor: supervisor._id,
+          });
+
+          return {
+            ...supervisor.toObject(),
+            user: supervisorUser ? supervisorUser.toObject() : null,
+          };
+        })
+      );
+
+      res.status(200).json(supervisorsWithUsers);
     } catch (error) {
       console.error("Błąd podczas pobierania listy promotorów:", error);
       res.status(500).json({ message: "Wystąpił błąd serwera." });
