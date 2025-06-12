@@ -14,30 +14,56 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { degree, field, status, tags, supervisor } = req.query;
-      const filter: any = {};
+      const initialFilter: any = {};
 
-      if (degree) filter.degree = degree;
-      if (field) filter.field = field;
-      if (status) filter.status = status;
+      // Najpierw pobierz prace z podstawowymi filtrami (bez statusu)
+      if (degree) initialFilter.degree = degree;
+      if (field) initialFilter.field = field;
       if (tags) {
         if (Array.isArray(tags)) {
-          filter.tags = { $in: tags };
+          initialFilter.tags = { $in: tags };
         } else if (typeof tags === "string") {
-          filter.tags = { $in: [tags] };
+          initialFilter.tags = { $in: [tags] };
         }
       }
       if (
         supervisor &&
         mongoose.Types.ObjectId.isValid(supervisor.toString())
       ) {
-        filter.supervisor = supervisor;
+        initialFilter.supervisor = supervisor;
       }
 
-      const theses: IThesis[] = await Thesis.find(filter)
+      const theses: IThesis[] = await Thesis.find(initialFilter)
         .populate("supervisor")
         .populate("students");
 
-      res.status(200).json(theses);
+      // Modyfikuj status każdej pracy na podstawie wolnych miejsc
+      const modifiedTheses = theses.map((thesis) => {
+        const availableSpots = thesis.studentsLimit - thesis.students.length;
+        const thesisObj = thesis.toObject();
+
+        // Aktualizuj status na podstawie dostępnych miejsc
+        if (availableSpots === 0) {
+          thesisObj.status = "TAKEN";
+        } else if (
+          thesis.status !== "PENDING_APPROVAL" &&
+          thesis.status !== "ARCHIVED"
+        ) {
+          thesisObj.status = "FREE";
+        }
+
+        // Dodaj informację o wolnych miejscach
+        thesisObj.availableSpots = availableSpots;
+
+        return thesisObj;
+      });
+
+      // Filtruj po statusie, jeśli został podany w query
+      const finalTheses = status
+        ? modifiedTheses.filter((thesis) => thesis.status === status)
+        : modifiedTheses;
+
+      res.status(200).json(finalTheses);
     } catch (error) {
       console.error("Błąd podczas pobierania listy prac dyplomowych:", error);
       res.status(500).json({ message: "Wystąpił błąd serwera." });

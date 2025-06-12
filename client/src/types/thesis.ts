@@ -18,4 +18,5 @@ export interface Thesis extends ThesisFormData {
   supervisor: User;
   students: User[];
   status: ThesisStatus;
+  availableSpots: number;
 }
