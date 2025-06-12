@@ -67,6 +67,16 @@ router.get(
           .json({ message: "Nie znaleziono pracy dyplomowej." });
       }
 
+      // Pobierz dane użytkownika dla supervisora
+      const supervisorUser = await User.findOne({
+        supervisor: thesis.supervisor._id,
+      });
+      const supervisorWithUser = {
+        ...thesis.supervisor,
+        user: supervisorUser ? supervisorUser.toObject() : null,
+      };
+
+      // Pobierz dane użytkowników dla studentów
       const studentsWithUser = await Promise.all(
         thesis.students.map(async (student: any) => {
           const user = await User.findOne({ student: student._id });
@@ -77,13 +87,14 @@ router.get(
         })
       );
 
-      // Zbuduj nowy obiekt thesis z rozszerzonymi danymi studentów
-      const thesisWithStudents = {
+      // Zbuduj nowy obiekt thesis z rozszerzonymi danymi supervisora i studentów
+      const thesisWithExtendedData = {
         ...thesis.toObject(),
+        supervisor: supervisorWithUser,
         students: studentsWithUser,
       };
 
-      res.status(200).json(thesisWithStudents);
+      res.status(200).json(thesisWithExtendedData);
     } catch (error) {
       console.error("Błąd podczas pobierania pracy dyplomowej po ID:", error);
       res.status(500).json({ message: "Wystąpił błąd serwera." });

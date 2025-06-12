@@ -84,7 +84,7 @@ const ThesisDetails = () => {
         }
         const createdChat = await createChat(
           {
-            members: [user._id, thesis.supervisor.userId],
+            members: [user._id, thesis.supervisor.user._id],
             title: thesis.title,
           },
           token
@@ -152,61 +152,62 @@ const ThesisDetails = () => {
                   </div>
                 )}
                 <div className="flex space-x-4">
-                  <Button
-                    className="bg-[var(--o-yellow)] hover:bg-[var(--o-yellow-dark)] text-black"
-                    onClick={async () => {
-                      try {
-                        const userData = localStorage.getItem("user");
-                        if (!userData) {
-                          navigate("/login");
-                          return;
-                        }
-                        const user = JSON.parse(userData);
-                        if (user.role !== "STUDENT") {
-                          setJoinRequestError(
-                            "Tylko studenci mogą dołączać do prac dyplomowych."
-                          );
-                          return;
-                        }
-                        setIsJoinRequestLoading(true);
-                        setJoinRequestError(null);
-                        const token = localStorage.getItem("accessToken");
-                        if (!token) {
-                          navigate("/login");
-                          return;
-                        }
-                        await createThesisRequest(thesis, token);
-                        setJoinRequestSuccess(true);
-                      } catch (error) {
-                        console.error(
-                          "Błąd podczas wysyłania prośby o dołączenie:",
-                          error
-                        );
-                        setJoinRequestError(
-                          error instanceof Error
-                            ? error.message
-                            : "Wystąpił błąd podczas wysyłania prośby o dołączenie."
-                        );
-                      } finally {
-                        setIsJoinRequestLoading(false);
-                      }
-                    }}
-                    disabled={isJoinRequestLoading || joinRequestSuccess}
-                  >
-                    {isJoinRequestLoading
-                      ? "Wysyłanie..."
-                      : joinRequestSuccess
-                      ? "Wysłano prośbę"
-                      : "Dołącz"}
-                  </Button>
-
-                  <Button
-                    onClick={handleSendMessage}
-                    variant="outline"
-                    className="border-[var(--o-blue)] text-[var(--o-blue)]"
-                  >
-                    Wyślij wiadomość
-                  </Button>
+                  {(() => {
+                    const userData = localStorage.getItem("user");
+                    const user = userData ? JSON.parse(userData) : null;
+                    if (user?.role === "STUDENT") {
+                      return (
+                        <>
+                          <Button
+                            className="bg-[var(--o-yellow)] hover:bg-[var(--o-yellow-dark)] text-black"
+                            onClick={async () => {
+                              try {
+                                setIsJoinRequestLoading(true);
+                                setJoinRequestError(null);
+                                const token =
+                                  localStorage.getItem("accessToken");
+                                if (!token) {
+                                  navigate("/login");
+                                  return;
+                                }
+                                await createThesisRequest(thesis, token);
+                                setJoinRequestSuccess(true);
+                              } catch (error) {
+                                console.error(
+                                  "Błąd podczas wysyłania prośby o dołączenie:",
+                                  error
+                                );
+                                setJoinRequestError(
+                                  error instanceof Error
+                                    ? error.message
+                                    : "Wystąpił błąd podczas wysyłania prośby o dołączenie."
+                                );
+                              } finally {
+                                setIsJoinRequestLoading(false);
+                              }
+                            }}
+                            disabled={
+                              isJoinRequestLoading || joinRequestSuccess
+                            }
+                          >
+                            {isJoinRequestLoading
+                              ? "Wysyłanie..."
+                              : joinRequestSuccess
+                              ? "Wysłano prośbę"
+                              : "Dołącz"}
+                          </Button>
+                          <Button
+                            onClick={handleSendMessage}
+                            variant="outline"
+                            className="border-[var(--o-blue)] text-[var(--o-blue)]"
+                          >
+                            Wyślij wiadomość
+                          </Button>
+                        </>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               </div>
             </div>
