@@ -213,3 +213,109 @@ export const updateRequestStatus = async (
 
   return response.json();
 };
+
+export const getUserChats = async (token: string) => {
+  const response = await fetch(`${API_URL}/chats/my-conversations`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || "Wystąpił błąd podczas pobierania czatów."
+    );
+  }
+
+  return response.json();
+};
+
+export interface Message {
+  _id: string;
+  content: string;
+  date: string;
+  author: string;
+  authorId: string;
+  sentByMe: boolean;
+}
+
+export const getChatMessages = async (
+  chatId: string,
+  token: string
+): Promise<Message[]> => {
+  const response = await fetch(`${API_URL}/chats/${chatId}/messages`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || "Wystąpił błąd podczas pobierania wiadomości."
+    );
+  }
+
+  return response.json();
+};
+
+export interface CreateChatPayload {
+  members: string[]; // user IDs
+  title: string;
+}
+
+export const createChat = async (payload: CreateChatPayload, token: string) => {
+  const response = await fetch(`${API_URL}/chats`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  console.log(response.status);
+
+  if (response.status === 409) {
+    return response.json();
+  }
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Wystąpił błąd podczas tworzenia czatu.");
+  }
+
+  return response.json();
+};
+
+export const sendChatMessage = async (
+  chatId: string,
+  content: string,
+  token: string
+): Promise<Message> => {
+  const response = await fetch(`${API_URL}/messages`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      chat: chatId,
+      content,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || "Wystąpił błąd podczas wysyłania wiadomości."
+    );
+  }
+
+  return response.json();
+};

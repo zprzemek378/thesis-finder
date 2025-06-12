@@ -7,7 +7,8 @@ import ThesisSidebar from "@/features/thesis/components/ThesisSidebar";
 import StarButton from "@/components/ui/star-button";
 import { Thesis } from "@/types/thesis";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { getThesisById, createThesisRequest } from "@/lib/api";
+import { getThesisById, createThesisRequest, createChat } from "@/lib/api";
+import { isErrored } from "stream";
 
 const ThesisDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -69,6 +70,39 @@ const ThesisDetails = () => {
       </MainLayout>
     );
   }
+
+  const handleSendMessage = () => {
+    console.log(thesis);
+
+    const fetchData = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user") ?? "");
+        const token = localStorage.getItem("accessToken");
+        if (!token || !user) {
+          navigate("/login");
+          return;
+        }
+        const createdChat = await createChat(
+          {
+            members: [user._id, thesis.supervisor.userId],
+            title: thesis.title,
+          },
+          token
+        );
+
+        navigate("/chats");
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Wystąpił błąd podczas tworzenia czatu."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  };
 
   return (
     <MainLayout>
@@ -165,14 +199,14 @@ const ThesisDetails = () => {
                       ? "Wysłano prośbę"
                       : "Dołącz"}
                   </Button>
-                  <Link to={"/chats"}>
-                    <Button
-                      variant="outline"
-                      className="border-[var(--o-blue)] text-[var(--o-blue)]"
-                    >
-                      Wyślij wiadomość
-                    </Button>
-                  </Link>
+
+                  <Button
+                    onClick={handleSendMessage}
+                    variant="outline"
+                    className="border-[var(--o-blue)] text-[var(--o-blue)]"
+                  >
+                    Wyślij wiadomość
+                  </Button>
                 </div>
               </div>
             </div>
