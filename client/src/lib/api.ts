@@ -36,7 +36,7 @@ export const createThesisRequest = async (thesis: Thesis, token: string) => {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      supervisor: thesis.supervisor._id,
+      supervisor: thesis.supervisor.user.supervisor,
       thesisTitle: thesis.title,
       description: `Prośba o dołączenie do pracy dyplomowej "${thesis.title}"`,
       thesisId: thesis._id,
