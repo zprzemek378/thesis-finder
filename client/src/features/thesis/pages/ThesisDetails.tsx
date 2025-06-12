@@ -7,7 +7,8 @@ import ThesisSidebar from "@/features/thesis/components/ThesisSidebar";
 import StarButton from "@/components/ui/star-button";
 import { Thesis } from "@/types/thesis";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { getThesisById, createThesisRequest } from "@/lib/api";
+import { getThesisById, createThesisRequest, createChat } from "@/lib/api";
+import { isErrored } from "stream";
 
 const ThesisDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,6 +71,39 @@ const ThesisDetails = () => {
     );
   }
 
+  const handleSendMessage = () => {
+    console.log(thesis);
+
+    const fetchData = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user") ?? "");
+        const token = localStorage.getItem("accessToken");
+        if (!token || !user) {
+          navigate("/login");
+          return;
+        }
+        const createdChat = await createChat(
+          {
+            members: [user._id, thesis.supervisor.user._id],
+            title: thesis.title,
+          },
+          token
+        );
+
+        navigate("/chats");
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Wystąpił błąd podczas tworzenia czatu."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto">
@@ -118,61 +152,62 @@ const ThesisDetails = () => {
                   </div>
                 )}
                 <div className="flex space-x-4">
-                  <Button
-                    className="bg-[var(--o-yellow)] hover:bg-[var(--o-yellow-dark)] text-black"
-                    onClick={async () => {
-                      try {
-                        const userData = localStorage.getItem("user");
-                        if (!userData) {
-                          navigate("/login");
-                          return;
-                        }
-                        const user = JSON.parse(userData);
-                        if (user.role !== "STUDENT") {
-                          setJoinRequestError(
-                            "Tylko studenci mogą dołączać do prac dyplomowych."
-                          );
-                          return;
-                        }
-                        setIsJoinRequestLoading(true);
-                        setJoinRequestError(null);
-                        const token = localStorage.getItem("accessToken");
-                        if (!token) {
-                          navigate("/login");
-                          return;
-                        }
-                        await createThesisRequest(thesis, token);
-                        setJoinRequestSuccess(true);
-                      } catch (error) {
-                        console.error(
-                          "Błąd podczas wysyłania prośby o dołączenie:",
-                          error
-                        );
-                        setJoinRequestError(
-                          error instanceof Error
-                            ? error.message
-                            : "Wystąpił błąd podczas wysyłania prośby o dołączenie."
-                        );
-                      } finally {
-                        setIsJoinRequestLoading(false);
-                      }
-                    }}
-                    disabled={isJoinRequestLoading || joinRequestSuccess}
-                  >
-                    {isJoinRequestLoading
-                      ? "Wysyłanie..."
-                      : joinRequestSuccess
-                      ? "Wysłano prośbę"
-                      : "Dołącz"}
-                  </Button>
-                  <Link to={"/chats"}>
-                    <Button
-                      variant="outline"
-                      className="border-[var(--o-blue)] text-[var(--o-blue)]"
-                    >
-                      Wyślij wiadomość
-                    </Button>
-                  </Link>
+                  {(() => {
+                    const userData = localStorage.getItem("user");
+                    const user = userData ? JSON.parse(userData) : null;
+                    if (user?.role === "STUDENT") {
+                      return (
+                        <>
+                          <Button
+                            className="bg-[var(--o-yellow)] hover:bg-[var(--o-yellow-dark)] text-black"
+                            onClick={async () => {
+                              try {
+                                setIsJoinRequestLoading(true);
+                                setJoinRequestError(null);
+                                const token =
+                                  localStorage.getItem("accessToken");
+                                if (!token) {
+                                  navigate("/login");
+                                  return;
+                                }
+                                await createThesisRequest(thesis, token);
+                                setJoinRequestSuccess(true);
+                              } catch (error) {
+                                console.error(
+                                  "Błąd podczas wysyłania prośby o dołączenie:",
+                                  error
+                                );
+                                setJoinRequestError(
+                                  error instanceof Error
+                                    ? error.message
+                                    : "Wystąpił błąd podczas wysyłania prośby o dołączenie."
+                                );
+                              } finally {
+                                setIsJoinRequestLoading(false);
+                              }
+                            }}
+                            disabled={
+                              isJoinRequestLoading || joinRequestSuccess
+                            }
+                          >
+                            {isJoinRequestLoading
+                              ? "Wysyłanie..."
+                              : joinRequestSuccess
+                              ? "Wysłano prośbę"
+                              : "Dołącz"}
+                          </Button>
+                          <Button
+                            onClick={handleSendMessage}
+                            variant="outline"
+                            className="border-[var(--o-blue)] text-[var(--o-blue)]"
+                          >
+                            Wyślij wiadomość
+                          </Button>
+                        </>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               </div>
             </div>

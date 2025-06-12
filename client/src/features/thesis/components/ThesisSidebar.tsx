@@ -37,7 +37,7 @@ const ThesisSidebar = ({ thesis }: ThesisSidebarProps) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="font-medium">Typ pracy:</p>
-          <p>inżynierska</p>
+          <p>{thesis.degree}</p>
         </div>
 
         <div>
@@ -45,8 +45,9 @@ const ThesisSidebar = ({ thesis }: ThesisSidebarProps) => {
           <div className="border rounded-md">
             <div className="flex items-center p-3">
               <p>
-                {thesis.supervisor.academicTitle} {thesis.supervisor.firstName}{" "}
-                {thesis.supervisor.lastName}
+                {thesis.supervisor._doc.academicTitle}{" "}
+                {thesis.supervisor.user.firstName}{" "}
+                {thesis.supervisor.user.lastName}
               </p>
             </div>
           </div>
