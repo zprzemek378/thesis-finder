@@ -93,40 +93,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, isOwnProfile = fals
       </div>
       
       {/* Statystyki */}
-      <div className="mt-6 flex items-center space-x-8 pt-4 border-t border-gray-200">
-        {user.role === 'STUDENT' && user.student && (
+      <div className="mt-6 flex items-center space-x-8 pt-4  border-gray-200">
+        {/* {user.role === 'STUDENT' && user.student && (
           <div className="text-center">
             <div className="text-2xl font-bold text-[var(--o-blue)]">
               {user.student.thesisList?.length || 0}
             </div>
             <div className="text-sm text-gray-600">Prace dyplomowe</div>
           </div>
-        )}
-        
-        {user.role === 'SUPERVISOR' && user.supervisor && (
-          <>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--o-blue)]">
-                {user.supervisor.thesisList?.length || 0}
-              </div>
-              <div className="text-sm text-gray-600">Prowadzone prace</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--o-yellow)]">
-                {user.supervisor.thesisLimit}
-              </div>
-              <div className="text-sm text-gray-600">Limit prac</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--o-green)]">
-                {user.supervisor.thesisLimit - (user.supervisor.thesisList?.length || 0)}
-              </div>
-              <div className="text-sm text-gray-600">Dostępne miejsca</div>
-            </div>
-          </>
-        )}
+        )} */}
+
       </div>
     </div>
   );

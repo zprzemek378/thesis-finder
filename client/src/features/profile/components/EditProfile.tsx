@@ -441,7 +441,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ user, onSave, onCancel }) => 
                 <p className="mt-1 text-sm text-red-500">{errors.selfInterests}</p>
               )}
               <p className="mt-1 text-sm text-gray-500">
-                Każde zainteresowanie w nowej linii
+                Każde nowe zainteresowanie po przecinku
               </p>
             </div>
           </div>
