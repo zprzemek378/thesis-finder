@@ -134,85 +134,88 @@ const MyTheses = () => {
           <div>
             <h2 className="text-xl font-semibold mb-4">Prośby o dołączenie</h2>
 
-            {requests.map((request) => (
-              <div
-                key={request._id}
-                className="bg-white rounded-lg shadow-md p-4 space-y-2"
-              >
-                <div>
-                  <p className="font-medium">
-                    {request.studentUser?.firstName &&
-                    request.studentUser?.lastName
-                      ? `${request.studentUser.firstName} ${request.studentUser.lastName}`
-                      : "Nieznany student"}
+            {requests
+              .filter((request) => request.status === "PENDING")
+              .map((request) => (
+                <div
+                  key={request._id}
+                  className="bg-white rounded-lg shadow-md p-4 space-y-2"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {request.studentUser?.firstName &&
+                      request.studentUser?.lastName
+                        ? `${request.studentUser.firstName} ${request.studentUser.lastName}`
+                        : "Nieznany student"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Wydział: {request.studentUser?.faculty || "Brak danych"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Typ studiów:{" "}
+                      {request.student?.studiesType || "Brak danych"} | Stopień:{" "}
+                      {request.student?.degree || "Brak danych"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Rozpoczęcie studiów:{" "}
+                      {request.student?.studiesStartDate
+                        ? new Date(
+                            request.student.studiesStartDate
+                          ).toLocaleDateString()
+                        : "Brak danych"}
+                    </p>
+                  </div>
+
+                  {request.content && (
+                    <p className="text-sm text-gray-700 whitespace-pre-line">
+                      {request.content}
+                    </p>
+                  )}
+
+                  <p className="text-xs text-gray-400">
+                    Utworzono: {new Date(request.createdAt).toLocaleString()}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    Wydział: {request.studentUser?.faculty || "Brak danych"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Typ studiów: {request.student?.studiesType || "Brak danych"}{" "}
-                    | Stopień: {request.student?.degree || "Brak danych"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Rozpoczęcie studiów:{" "}
-                    {request.student?.studiesStartDate
-                      ? new Date(
-                          request.student.studiesStartDate
-                        ).toLocaleDateString()
-                      : "Brak danych"}
-                  </p>
+
+                  {request.status === "PENDING" && (
+                    <div className="flex space-x-2 pt-2">
+                      <Button
+                        onClick={() =>
+                          handleRequestAction(
+                            request._id,
+                            request.thesisId,
+                            "APPROVED"
+                          )
+                        }
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                      >
+                        Zatwierdź
+                      </Button>
+                      <Button
+                        onClick={() =>
+                          handleRequestAction(
+                            request._id,
+                            request.thesisId,
+                            "REJECTED"
+                          )
+                        }
+                        className="flex-1 bg-red-600 hover:bg-red-700"
+                      >
+                        Odrzuć
+                      </Button>
+                    </div>
+                  )}
+                  {request.status === "APPROVED" && (
+                    <div className="text-green-600 font-medium text-center pt-2">
+                      Zatwierdzona
+                    </div>
+                  )}
+                  {request.status === "REJECTED" && (
+                    <div className="text-red-600 font-medium text-center pt-2">
+                      Odrzucona
+                    </div>
+                  )}
                 </div>
-
-                {request.content && (
-                  <p className="text-sm text-gray-700 whitespace-pre-line">
-                    {request.content}
-                  </p>
-                )}
-
-                <p className="text-xs text-gray-400">
-                  Utworzono: {new Date(request.createdAt).toLocaleString()}
-                </p>
-
-                {request.status === "PENDING" && (
-                  <div className="flex space-x-2 pt-2">
-                    <Button
-                      onClick={() =>
-                        handleRequestAction(
-                          request._id,
-                          request.thesisId,
-                          "APPROVED"
-                        )
-                      }
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                    >
-                      Zatwierdź
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        handleRequestAction(
-                          request._id,
-                          request.thesisId,
-                          "REJECTED"
-                        )
-                      }
-                      className="flex-1 bg-red-600 hover:bg-red-700"
-                    >
-                      Odrzuć
-                    </Button>
-                  </div>
-                )}
-                {request.status === "APPROVED" && (
-                  <div className="text-green-600 font-medium text-center pt-2">
-                    Zatwierdzona
-                  </div>
-                )}
-                {request.status === "REJECTED" && (
-                  <div className="text-red-600 font-medium text-center pt-2">
-                    Odrzucona
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>
