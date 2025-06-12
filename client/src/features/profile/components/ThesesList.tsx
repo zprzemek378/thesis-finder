@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '../../../components/ui/button';
-import { BookOpen, Users, Tag, ExternalLink } from 'lucide-react';
-import { ProfileUser } from '../../../types/profile';
-import { Thesis } from '../../../types/thesis';
-import { getThesisById } from '../../../lib/api';
+import React, { useState, useEffect } from "react";
+import { Button } from "../../../components/ui/button";
+import { BookOpen, Users, Tag, ExternalLink } from "lucide-react";
+import { ProfileUser } from "../../../types/profile";
+import { Thesis } from "../../../types/thesis";
+import { getThesisById } from "../../../lib/api";
+import { getDegreeLabel } from "@/utils/degreeUtils";
 
 interface ThesesListProps {
   user: ProfileUser;
@@ -25,11 +26,11 @@ const ThesesList: React.FC<ThesesListProps> = ({ user, thesesIds = [] }) => {
       try {
         setLoading(true);
         const token = localStorage.getItem("accessToken");
-        
+
         if (!token) {
-          throw new Error('Brak tokenu autoryzacji');
+          throw new Error("Brak tokenu autoryzacji");
         }
-        
+
         const thesesPromises = thesesIds.map(async (thesisId) => {
           try {
             return await getThesisById(thesisId, token);
@@ -40,12 +41,14 @@ const ThesesList: React.FC<ThesesListProps> = ({ user, thesesIds = [] }) => {
         });
 
         const thesesData = await Promise.all(thesesPromises);
-        const validTheses = thesesData.filter((thesis): thesis is Thesis => thesis !== null);
-        
+        const validTheses = thesesData.filter(
+          (thesis): thesis is Thesis => thesis !== null
+        );
+
         setTheses(validTheses);
       } catch (err) {
-        setError('Nie udało się załadować prac dyplomowych');
-        console.error('Error fetching theses:', err);
+        setError("Nie udało się załadować prac dyplomowych");
+        console.error("Error fetching theses:", err);
       } finally {
         setLoading(false);
       }
@@ -56,16 +59,22 @@ const ThesesList: React.FC<ThesesListProps> = ({ user, thesesIds = [] }) => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'FREE': { label: 'Dostępna', className: 'bg-green-100 text-green-800' },
-      'IN_PROGRESS': { label: 'W trakcie', className: 'bg-yellow-100 text-yellow-800' },
-      'TAKEN': { label: 'Zajęta', className: 'bg-blue-100 text-blue-800' },
-      'FINISHED': { label: 'Zakończona', className: 'bg-gray-100 text-gray-800' }
+      FREE: { label: "Dostępna", className: "bg-green-100 text-green-800" },
+      IN_PROGRESS: {
+        label: "W trakcie",
+        className: "bg-yellow-100 text-yellow-800",
+      },
+      TAKEN: { label: "Zajęta", className: "bg-blue-100 text-blue-800" },
+      FINISHED: { label: "Zakończona", className: "bg-gray-100 text-gray-800" },
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.FREE;
-    
+    const config =
+      statusConfig[status as keyof typeof statusConfig] || statusConfig.FREE;
+
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}
+      >
         {config.label}
       </span>
     );
@@ -73,12 +82,12 @@ const ThesesList: React.FC<ThesesListProps> = ({ user, thesesIds = [] }) => {
 
   const getTitle = () => {
     switch (user.role) {
-      case 'STUDENT':
-        return 'Moje prace dyplomowe';
-      case 'SUPERVISOR':
-        return 'Prowadzone prace';
+      case "STUDENT":
+        return "Moje prace dyplomowe";
+      case "SUPERVISOR":
+        return "Prowadzone prace";
       default:
-        return 'Prace dyplomowe';
+        return "Prace dyplomowe";
     }
   };
 
@@ -114,9 +123,7 @@ const ThesesList: React.FC<ThesesListProps> = ({ user, thesesIds = [] }) => {
           </h3>
         </div>
         <div className="p-6">
-          <div className="text-center py-8 text-red-500">
-            {error}
-          </div>
+          <div className="text-center py-8 text-red-500">{error}</div>
         </div>
       </div>
     );
@@ -136,10 +143,9 @@ const ThesesList: React.FC<ThesesListProps> = ({ user, thesesIds = [] }) => {
       <div className="p-6">
         {theses.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            {user.role === 'STUDENT' 
-              ? 'Nie masz jeszcze żadnych prac dyplomowych' 
-              : 'Nie prowadzisz jeszcze żadnych prac'
-            }
+            {user.role === "STUDENT"
+              ? "Nie masz jeszcze żadnych prac dyplomowych"
+              : "Nie prowadzisz jeszcze żadnych prac"}
           </div>
         ) : (
           <div className="space-y-4">
@@ -159,8 +165,8 @@ const ThesesList: React.FC<ThesesListProps> = ({ user, thesesIds = [] }) => {
                   </div>
                   <div className="ml-4 flex flex-col items-end space-y-2">
                     {getStatusBadge(thesis.status)}
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handleViewDetails(thesis._id)}
                     >
@@ -173,9 +179,9 @@ const ThesesList: React.FC<ThesesListProps> = ({ user, thesesIds = [] }) => {
                 <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
                   <div className="flex items-center space-x-1">
                     <BookOpen className="w-4 h-4" />
-                    <span>{thesis.degree}</span>
+                    <span>{getDegreeLabel(thesis.degree)}</span>
                   </div>
-                  
+
                   <div className="flex items-center space-x-1">
                     <Users className="w-4 h-4" />
                     <span>

@@ -30,6 +30,7 @@ export const FACULTIES = [
     label: "Wydział Informatyki, Elektroniki i Telekomunikacji",
   },
   { value: "WH", label: "Wydział Humanistyczny" },
+  { value: "WI", label: "Wydział Informatyki" },
 ] as const;
 
 export const FACULTIES_VALUES = FACULTIES.map((f) => f.value);
@@ -54,14 +55,18 @@ export const FIELDS_OF_STUDY: Record<
     { value: "AiR", label: "Automatyka i Robotyka" },
     { value: "IB", label: "Inżynieria Biomedyczna" },
   ],
-  WIEiT: [
-    { value: "INFA", label: "Informatyka" },
-    { value: "ELE", label: "Elektronika" },
-    { value: "TEL", label: "Telekomunikacja" },
-  ],
   WGGiIŚ: [
     { value: "GiK", label: "Geodezja i Kartografia" },
-    { value: "IiMŚ", label: "Inżynieria i Monitoring Środowiska" },
+    { value: "IŚ", label: "Inżynieria Środowiska" },
+    { value: "IMŚ", label: "Inżynieria i Monitoring Środowiska" },
+  ],
+  WGiG: [
+    { value: "GiG", label: "Górnictwo i Geoinżynieria" },
+    { value: "IG", label: "Inżynieria Górnicza" },
+  ],
+  WIMiC: [
+    { value: "IMat", label: "Inżynieria Materiałowa" },
+    { value: "Cer", label: "Ceramika" },
   ],
   WIMiIP: [
     { value: "IM", label: "Inżynieria Metali" },
@@ -69,18 +74,52 @@ export const FIELDS_OF_STUDY: Record<
   ],
   WIMiR: [
     { value: "MiBM", label: "Mechanika i Budowa Maszyn" },
+    { value: "AiR", label: "Automatyka i Robotyka" },
     { value: "RiA", label: "Robotyka i Automatyka" },
+    { value: "EiT", label: "Energetyka i Technologie Energetyczne" },
   ],
+  WMS: [
+    { value: "MS", label: "Matematyka Stosowana" },
+    { value: "AN", label: "Analiza Danych" },
+  ],
+  WO: [{ value: "Odl", label: "Inżynieria Odlewnictwa" }],
   WFiIS: [
     { value: "FT", label: "Fizyka Techniczna" },
-    { value: "IS", label: "Informatyka Stosowana" },
+    { value: "ISF", label: "Informatyka Stosowana" },
+    { value: "AI", label: "Analityka i Informatyka Przemysłowa" },
+  ],
+  WWNiG: [
+    { value: "WiG", label: "Wiertnictwo i Geoinżynieria" },
+    { value: "Nafta", label: "Inżynieria Naftowa i Gazownicza" },
+  ],
+  WEiP: [
+    { value: "En", label: "Energetyka" },
+    { value: "PiG", label: "Paliwa i Gospodarka Energetyczna" },
+  ],
+  WIEiT: [
+    { value: "INF", label: "Informatyka" },
+    { value: "EL", label: "Elektronika" },
+    { value: "TEL", label: "Telekomunikacja" },
+    { value: "EiT", label: "Elektronika i Telekomunikacja" },
+    { value: "INFOTRON", label: "Informatyka i Systemy Inteligentne" },
+  ],
+  WZ: [
+    { value: "ZM", label: "Zarządzanie" },
+    { value: "IMiIS", label: "Informatyka i Metody Ilościowe w Zarządzaniu" },
   ],
   WH: [
     { value: "SOC", label: "Socjologia" },
     { value: "KUL", label: "Kulturoznawstwo" },
-    { value: "IS", label: "Informatyka Społeczna" },
+    { value: "ISpo", label: "Informatyka Społeczna" },
+    { value: "FTZ", label: "Filozofia i Technologie Zrównoważonego Rozwoju" },
   ],
-} as const;
+  WI: [
+    {
+      value: "Inf",
+      label: "Informatyka",
+    },
+  ],
+};
 
 export const THESIS_STATUS = {
   FREE: "FREE",

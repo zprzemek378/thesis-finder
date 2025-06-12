@@ -8,7 +8,7 @@ import StarButton from "@/components/ui/star-button";
 import { Thesis } from "@/types/thesis";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { getThesisById, createThesisRequest, createChat } from "@/lib/api";
-import { isErrored } from "stream";
+import { getDegreeLabel } from "@/utils/degreeUtils";
 
 const ThesisDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +19,11 @@ const ThesisDetails = () => {
   const [isJoinRequestLoading, setIsJoinRequestLoading] = useState(false);
   const [joinRequestError, setJoinRequestError] = useState<string | null>(null);
   const [joinRequestSuccess, setJoinRequestSuccess] = useState(false);
+
+  // Calculate available spots
+  const availableSlots = thesis
+    ? thesis.studentsLimit - thesis.students.length
+    : 0;
 
   useEffect(() => {
     const fetchThesis = async () => {
@@ -51,6 +56,38 @@ const ThesisDetails = () => {
     fetchThesis();
   }, [id, navigate]);
 
+  const handleSendMessage = () => {
+    const fetchData = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user") ?? "");
+        const token = localStorage.getItem("accessToken");
+        if (!token || !user || !thesis) {
+          navigate("/login");
+          return;
+        }
+
+        await createChat(
+          {
+            members: [user._id, thesis.supervisor._id],
+            title: thesis.title,
+          },
+          token
+        );
+
+        navigate("/chats");
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Wystąpił błąd podczas tworzenia czatu."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  };
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -70,39 +107,6 @@ const ThesisDetails = () => {
       </MainLayout>
     );
   }
-
-  const handleSendMessage = () => {
-    console.log(thesis);
-
-    const fetchData = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user") ?? "");
-        const token = localStorage.getItem("accessToken");
-        if (!token || !user) {
-          navigate("/login");
-          return;
-        }
-        const createdChat = await createChat(
-          {
-            members: [user._id, thesis.supervisor.user._id],
-            title: thesis.title,
-          },
-          token
-        );
-
-        navigate("/chats");
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Wystąpił błąd podczas tworzenia czatu."
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  };
 
   return (
     <MainLayout>
@@ -125,7 +129,9 @@ const ThesisDetails = () => {
 
               <div className="mb-6">
                 <p className="text-gray-600">{thesis.faculty}</p>
-                <p className="text-gray-500">Stopień: {thesis.degree}</p>
+                <p className="text-gray-500">
+                  Stopień: {getDegreeLabel(thesis.degree)}
+                </p>
               </div>
 
               <Separator.Root className="h-px bg-gray-200 my-4" />
@@ -187,13 +193,24 @@ const ThesisDetails = () => {
                               }
                             }}
                             disabled={
-                              isJoinRequestLoading || joinRequestSuccess
+                              isJoinRequestLoading ||
+                              joinRequestSuccess ||
+                              thesis.students.some(
+                                (student) => student._id === user?.student
+                              ) ||
+                              availableSlots === 0
                             }
                           >
                             {isJoinRequestLoading
                               ? "Wysyłanie..."
                               : joinRequestSuccess
                               ? "Wysłano prośbę"
+                              : thesis.students.some(
+                                  (student) => student._id === user?.student
+                                )
+                              ? "Już dołączono"
+                              : availableSlots === 0
+                              ? "Brak miejsc"
                               : "Dołącz"}
                           </Button>
                           <Button
