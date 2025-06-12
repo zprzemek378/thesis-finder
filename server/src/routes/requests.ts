@@ -123,7 +123,7 @@ router.get(
 // POST /Requests
 // Stwórz nowe zgłoszenie
 router.post(
-  "/",
+  "/Requests",
   verifyAccessTokenMiddleware,
   async (req: any, res: any, next: NextFunction) => {
     try {
@@ -231,6 +231,64 @@ router.put(
     } catch (error) {
       console.error("Błąd podczas aktualizacji statusu zgłoszenia:", error);
       res.status(500).json({ message: "Wystąpił błąd serwera." });
+    }
+  }
+);
+
+// GET /Requests/{id}/status
+// Pobierz status zgłoszenia o podanym ID
+router.get(
+  "/:id/status",
+  verifyAccessTokenMiddleware,
+  async (req: any, res: any, next: NextFunction) => {
+    try {
+      const requestId = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(requestId)) {
+        return res
+          .status(400)
+          .json({ message: "Nieprawidłowy format ID zgłoszenia." });
+      }
+
+      const request: IRequest | null = await RequestModel.findById(requestId);
+      if (!request) {
+        return res.status(404).json({ message: "Nie znaleziono zgłoszenia." });
+      }
+
+      res.status(200).json({ status: request.status });
+    } catch (error) {
+      console.error("Błąd podczas pobierania statusu zgłoszenia:", error);
+      next(error);
+    }
+  }
+);
+
+// GET /Requests/{id}/messages
+// Pobierz wszystkie wiadomości dla zgłoszenia o podanym ID
+router.get(
+  "/:id/messages",
+  verifyAccessTokenMiddleware,
+  async (req: any, res: any, next: NextFunction) => {
+    try {
+      const requestId = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(requestId)) {
+        return res
+          .status(400)
+          .json({ message: "Nieprawidłowy format ID zgłoszenia." });
+      }
+
+      const request: IRequest | null = await RequestModel.findById(requestId);
+      if (!request) {
+        return res.status(404).json({ message: "Nie znaleziono zgłoszenia." });
+      }
+
+      const messages: IMessage[] = await Message.find({ request: requestId })
+        .populate("author")
+        .sort({ date: 1 });
+
+      res.status(200).json(messages);
+    } catch (error) {
+      console.error("Błąd podczas pobierania wiadomości zgłoszenia:", error);
+      next(error);
     }
   }
 );
