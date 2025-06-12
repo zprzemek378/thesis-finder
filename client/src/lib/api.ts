@@ -1,7 +1,9 @@
 import { ThesisFormData, Thesis } from "../types/thesis";
 import { Request } from "../types/request";
+import { ProfileUser } from "../types/profile";
 
 const API_URL = "http://localhost:3000";
+export const API_BASE_URL = `${API_URL}/api`;
 
 interface ThesesQueryParams {
   degree?: string;
@@ -27,6 +29,72 @@ interface ChatHeader {
     author: ChatAuthor;
   } | null;
 }
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("accessToken");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+};
+
+export const profileApi = {
+  getMyProfile: async (): Promise<ProfileUser> => {
+    const token = localStorage.getItem("accessToken");
+    const response = await fetch(`${API_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Nie udało się pobrać profilu");
+    }
+
+    return response.json();
+  },
+
+  getUserProfile: async (userId: string): Promise<ProfileUser> => {
+    const token = localStorage.getItem("accessToken");
+    const response = await fetch(`${API_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(
+        error.message || "Nie udało się pobrać profilu użytkownika"
+      );
+    }
+
+    return response.json();
+  },
+
+  updateProfile: async (
+    profileData: Partial<ProfileUser>
+  ): Promise<ProfileUser> => {
+    const response = await fetch(`${API_URL}/users/profile`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(profileData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Nie udało się zaktualizować profilu");
+    }
+
+    return response.json();
+  },
+
+  getThesisDetails: async (thesisId: string): Promise<Thesis> => {
+    const token = localStorage.getItem("accessToken");
+    return getThesisById(thesisId, token || "");
+  },
+};
 
 export const createThesisRequest = async (thesis: Thesis, token: string) => {
   const response = await fetch(`${API_URL}/requests/Requests`, {
@@ -134,8 +202,9 @@ export const createThesis = async (data: ThesisFormData, token: string) => {
     },
     body: JSON.stringify({
       ...data,
-      status: "FREE",
+      status: data.initialStudentIds.length > 0 ? "TAKEN" : "FREE",
       supervisor: supervisorId,
+      students: data.initialStudentIds, // Send initialStudentIds as students field
     }),
   });
 

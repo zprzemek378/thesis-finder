@@ -7,12 +7,18 @@ import { PORT, SERVER_URL } from "../../../../shared/constants";
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const pathname = useLocation().pathname;
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
+    const user = localStorage.getItem("user");
     setIsLoggedIn(!!token);
+    if (user) {
+      const userData = JSON.parse(user);
+      setUserRole(userData.role);
+    }
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -24,6 +30,7 @@ const Header = () => {
 
       if (response.ok) {
         localStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
         setIsLoggedIn(false);
         navigate("/");
       }
@@ -76,17 +83,21 @@ const Header = () => {
           </NavButton>
           {isLoggedIn && (
             <>
-              <NavButton to="/my-theses" pathname={pathname}>
-                Moje prace
-              </NavButton>
-              <NavButton to="/saved" pathname={pathname}>
-                Zapisane
-              </NavButton>
+              {userRole === "SUPERVISOR" && (
+                <>
+                  <NavButton to="/my-theses" pathname={pathname}>
+                    Moje prace
+                  </NavButton>
+                  <NavButton to="/add-thesis" pathname={pathname}>
+                    Dodaj pracę
+                  </NavButton>
+                </>
+              )}
               <NavButton to="/chats" pathname={pathname}>
                 Czaty
               </NavButton>
-              <NavButton to="/add-thesis" pathname={pathname}>
-                Dodaj pracę
+              <NavButton to="/profile" pathname={pathname}>
+                Profil
               </NavButton>
             </>
           )}

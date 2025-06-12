@@ -13,15 +13,19 @@ export async function verifyAccessTokenMiddleware(
   next: NextFunction
 ): Promise<void> {
   const authHeader = req.headers.authorization;
+
   if (!authHeader?.startsWith("Bearer ")) {
+    console.log("No Bearer token found");
     res.status(401).json({ message: "Brak tokena" });
     return;
   }
 
   const token = authHeader.split(" ")[1];
+
   try {
     // Weryfikacja tokenu i przypisanie użytkownika do req.user
     const payload = verifyAccessTokenUtil(token);
+    console.log("Token payload:", payload);
 
     // Jeśli payload jest typu JwtPayload, możesz bezpiecznie przypisać go do req.user
     // if (typeof payload !== "string") {

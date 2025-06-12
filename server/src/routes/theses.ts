@@ -38,34 +38,36 @@ router.get(
         .populate("students");
 
       // Modyfikuj status każdej pracy i dodaj dane użytkowników
-      const modifiedTheses = await Promise.all(theses.map(async (thesis) => {
-        const availableSpots = thesis.studentsLimit - thesis.students.length;
-        const thesisObj = thesis.toObject();
+      const modifiedTheses = await Promise.all(
+        theses.map(async (thesis) => {
+          const availableSpots = thesis.studentsLimit - thesis.students.length;
+          const thesisObj = thesis.toObject();
 
-        // Pobierz dane użytkownika dla supervisora bezpośrednio z bazy
-        const supervisorUser = await User.findOne({
-          supervisor: thesis.supervisor._id,
-        });
-        thesisObj.supervisor = {
-          ...thesisObj.supervisor,
-          user: supervisorUser ? supervisorUser.toObject() : null
-        };
+          // Pobierz dane użytkownika dla supervisora bezpośrednio z bazy
+          const supervisorUser = await User.findOne({
+            supervisor: thesis.supervisor._id,
+          });
+          thesisObj.supervisor = {
+            ...thesisObj.supervisor,
+            user: supervisorUser ? supervisorUser.toObject() : null,
+          };
 
-        // Aktualizuj status na podstawie dostępnych miejsc
-        if (availableSpots === 0) {
-          thesisObj.status = "TAKEN";
-        } else if (
-          thesis.status !== "PENDING_APPROVAL" &&
-          thesis.status !== "ARCHIVED"
-        ) {
-          thesisObj.status = "FREE";
-        }
+          // Aktualizuj status na podstawie dostępnych miejsc
+          if (availableSpots === 0) {
+            thesisObj.status = "TAKEN";
+          } else if (
+            thesis.status !== "PENDING_APPROVAL" &&
+            thesis.status !== "ARCHIVED"
+          ) {
+            thesisObj.status = "FREE";
+          }
 
-        // Dodaj informację o wolnych miejscach
-        thesisObj.availableSpots = availableSpots;
+          // Dodaj informację o wolnych miejscach
+          thesisObj.availableSpots = availableSpots;
 
-        return thesisObj;
-      }));
+          return thesisObj;
+        })
+      );
 
       // Filtruj po statusie, jeśli został podany w query
       const finalTheses = status
@@ -174,7 +176,10 @@ router.post(
   "/",
   verifyAccessTokenMiddleware,
   async (req: any, res: any, next: NextFunction) => {
+    const session = await mongoose.startSession();
     try {
+      session.startTransaction();
+
       const {
         title,
         description,
@@ -189,6 +194,8 @@ router.post(
 
       const userRole = req.user!.role;
       const loggedInUserId = req.user!._id;
+
+      console.log(initialStudentIds);
 
       if (userRole !== "SUPERVISOR" && userRole !== "ADMIN") {
         return res
@@ -259,12 +266,18 @@ router.post(
       if (initialStudentIds && initialStudentIds.length > 0) {
         for (const studentId of initialStudentIds) {
           if (!mongoose.Types.ObjectId.isValid(studentId)) {
+            await session.abortTransaction();
+            await session.endSession();
             return res.status(400).json({
               message: `Nieprawidłowy format ID studenta: ${studentId}.`,
             });
           }
-          const studentExists = await Student.findById(studentId);
+          const studentExists = await Student.findById(studentId).session(
+            session
+          );
           if (!studentExists) {
+            await session.abortTransaction();
+            await session.endSession();
             return res
               .status(404)
               .json({ message: `Student o ID ${studentId} nie istnieje.` });
@@ -272,6 +285,8 @@ router.post(
           studentsToAssign.push(new mongoose.Types.ObjectId(studentId));
         }
         if (studentsToAssign.length > (studentsLimit || 1)) {
+          await session.abortTransaction();
+          await session.endSession();
           return res.status(400).json({
             message: `Liczba przypisanych studentów (${
               studentsToAssign.length
@@ -296,12 +311,27 @@ router.post(
 
       await Supervisor.findByIdAndUpdate(supervisorId, {
         $push: { thesisList: savedThesis._id },
-      });
+      }).session(session);
 
+      // Update each student's thesisList
+      if (studentsToAssign.length > 0) {
+        await Promise.all(
+          studentsToAssign.map((studentId) =>
+            Student.findByIdAndUpdate(studentId, {
+              $push: { thesisList: savedThesis._id },
+            }).session(session)
+          )
+        );
+      }
+
+      await session.commitTransaction();
       res.status(201).json(savedThesis);
     } catch (error) {
+      await session.abortTransaction();
       console.error("Błąd podczas dodawania nowej pracy dyplomowej:", error);
       res.status(500).json({ message: "Wystąpił błąd serwera." });
+    } finally {
+      await session.endSession();
     }
   }
 );

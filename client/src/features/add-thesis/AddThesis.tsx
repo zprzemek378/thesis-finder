@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { StudyType } from "../../types/thesis";
 import { createThesis } from "../../lib/api";
+import StudentSelect from "@/components/user/StudentSelect";
 import {
   FACULTIES as FACULTIES_DATA,
   FIELDS_OF_STUDY as FIELDS_DATA,
@@ -41,6 +42,7 @@ interface ThesisFormData {
   degree: StudyType;
   tags: string[];
   studentsLimit: number;
+  initialStudentIds: string[];
 }
 
 const AddThesis = () => {
@@ -53,6 +55,7 @@ const AddThesis = () => {
     degree: "MASTER",
     tags: [],
     studentsLimit: 1,
+    initialStudentIds: [],
   });
 
   const [errors, setErrors] = useState({
@@ -63,6 +66,7 @@ const AddThesis = () => {
     degree: "",
     tags: "",
     studentsLimit: "",
+    initialStudentIds: "",
   });
 
   const validateForm = () => {
@@ -75,6 +79,7 @@ const AddThesis = () => {
       degree: "",
       tags: "",
       studentsLimit: "",
+      initialStudentIds: "",
     };
 
     if (!formData.title || formData.title.length < 3) {
@@ -112,6 +117,11 @@ const AddThesis = () => {
       isValid = false;
     }
 
+    if (formData.initialStudentIds.length > formData.studentsLimit) {
+      newErrors.initialStudentIds = `Liczba wybranych studentów (${formData.initialStudentIds.length}) przekracza limit miejsc (${formData.studentsLimit})`;
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
@@ -121,6 +131,8 @@ const AddThesis = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setServerError("");
+
+    console.log("Submitting form with data:", formData);
 
     if (validateForm()) {
       try {
@@ -169,6 +181,12 @@ const AddThesis = () => {
         [name]: "",
       }));
     }
+
+    // Log the next state value instead of current state
+    if (name === "initialStudentIds") {
+      console.log("Selected students:", value);
+    }
+    console.log(formData);
   };
 
   return (
@@ -344,6 +362,22 @@ const AddThesis = () => {
                   </p>
                 )}
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Studenci
+              </label>
+              <StudentSelect
+                onSelect={(selectedIds) =>
+                  handleChange({
+                    target: { name: "initialStudentIds", value: selectedIds },
+                  })
+                }
+                selectedStudents={formData.initialStudentIds}
+                maxStudents={formData.studentsLimit}
+                error={!!errors.initialStudentIds}
+              />
             </div>
 
             {serverError && (
