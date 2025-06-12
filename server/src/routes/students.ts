@@ -2,6 +2,7 @@ import { Router, Request, NextFunction } from 'express';
 import { verifyAccessTokenMiddleware } from '../middlewares/auth';
 import Student, { IStudent } from '../models/Student';
 import RequestModel, { IRequest } from '../models/Request';
+import User from '../models/User';
 import mongoose from 'mongoose';
 
 const router = Router();
@@ -10,9 +11,16 @@ const router = Router();
 // Pobierz listę wszystkich studentów
 router.get('/', verifyAccessTokenMiddleware, async (req: any, res: any, next: NextFunction) => {
     try {
-        const students: IStudent[] = await Student.find();
-        res.status(200).json(students);
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
 
+        // Find all users that are students with their student data
+        const users = await User.find({ role: 'STUDENT' })
+            .select('-password')
+            .populate('student');
+            
+        res.status(200).json(users);
     } catch (error) {
         console.error('Błąd podczas pobierania listy studentów:', error);
         res.status(500).json({ message: 'Wystąpił błąd serwera' });

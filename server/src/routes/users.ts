@@ -16,43 +16,45 @@ router.put(
     try {
       console.log("PUT /users/profile - Request received");
       console.log("Request body:", req.body);
-      
+
       const userId = req.user?._id;
       console.log("User ID:", userId);
-      
+
       if (!userId) {
         return res.status(401).json({ message: "Nieautoryzowany dostęp." });
       }
 
-      const { 
-        firstName, 
-        lastName, 
-        email, 
+      const {
+        firstName,
+        lastName,
+        email,
         faculty,
         studentData,
-        supervisorData 
+        supervisorData,
       } = req.body;
 
       // Walidacja podstawowych danych
       if (!firstName || !lastName || !email || !faculty) {
-        return res.status(400).json({ 
-          message: "Imię, nazwisko, email i wydział są wymagane." 
+        return res.status(400).json({
+          message: "Imię, nazwisko, email i wydział są wymagane.",
         });
       }
 
       // Sprawdź czy email nie jest już zajęty przez innego użytkownika
-      const existingUser = await User.findOne({ 
-        email, 
-        _id: { $ne: userId } 
+      const existingUser = await User.findOne({
+        email,
+        _id: { $ne: userId },
       });
       if (existingUser) {
-        return res.status(400).json({ 
-          message: "Ten adres email jest już zajęty." 
+        return res.status(400).json({
+          message: "Ten adres email jest już zajęty.",
         });
       }
 
       // Znajdź użytkownika
-      const user = await User.findById(userId).populate("student").populate("supervisor");
+      const user = await User.findById(userId)
+        .populate("student")
+        .populate("supervisor");
       if (!user) {
         return res.status(404).json({ message: "Nie znaleziono użytkownika." });
       }
@@ -67,8 +69,10 @@ router.put(
       if (user.role === "STUDENT" && user.student && studentData) {
         const student = await Student.findById(user.student);
         if (student) {
-          if (studentData.studiesType) student.studiesType = studentData.studiesType;
-          if (studentData.studiesStartDate) student.studiesStartDate = new Date(studentData.studiesStartDate);
+          if (studentData.studiesType)
+            student.studiesType = studentData.studiesType;
+          if (studentData.studiesStartDate)
+            student.studiesStartDate = new Date(studentData.studiesStartDate);
           if (studentData.degree) student.degree = studentData.degree;
           await student.save();
         }
@@ -78,8 +82,10 @@ router.put(
       if (user.role === "SUPERVISOR" && user.supervisor && supervisorData) {
         const supervisor = await Supervisor.findById(user.supervisor);
         if (supervisor) {
-          if (supervisorData.academicTitle) supervisor.academicTitle = supervisorData.academicTitle;
-          if (supervisorData.selfInterests !== undefined) supervisor.selfInterests = supervisorData.selfInterests;
+          if (supervisorData.academicTitle)
+            supervisor.academicTitle = supervisorData.academicTitle;
+          if (supervisorData.selfInterests !== undefined)
+            supervisor.selfInterests = supervisorData.selfInterests;
           await supervisor.save();
         }
       }

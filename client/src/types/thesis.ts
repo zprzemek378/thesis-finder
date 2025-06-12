@@ -11,6 +11,7 @@ export interface ThesisFormData {
   faculty: string;
   tags: string[];
   studentsLimit: number;
+  initialStudentIds: string[];
 }
 
 export interface Thesis extends ThesisFormData {

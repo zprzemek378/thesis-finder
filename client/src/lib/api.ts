@@ -2,9 +2,8 @@ import { ThesisFormData, Thesis } from "../types/thesis";
 import { Request } from "../types/request";
 import { ProfileUser } from "../types/profile";
 
-
 const API_URL = "http://localhost:3000";
-export const API_BASE_URL = `${API_URL}/api`; 
+export const API_BASE_URL = `${API_URL}/api`;
 
 interface ThesesQueryParams {
   degree?: string;
@@ -50,7 +49,7 @@ export const profileApi = {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Nie udało się pobrać profilu');
+      throw new Error(error.message || "Nie udało się pobrać profilu");
     }
 
     return response.json();
@@ -66,22 +65,26 @@ export const profileApi = {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Nie udało się pobrać profilu użytkownika');
+      throw new Error(
+        error.message || "Nie udało się pobrać profilu użytkownika"
+      );
     }
 
     return response.json();
   },
 
-  updateProfile: async (profileData: Partial<ProfileUser>): Promise<ProfileUser> => {
+  updateProfile: async (
+    profileData: Partial<ProfileUser>
+  ): Promise<ProfileUser> => {
     const response = await fetch(`${API_URL}/users/profile`, {
-      method: 'PUT',
+      method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify(profileData),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Nie udało się zaktualizować profilu');
+      throw new Error(error.message || "Nie udało się zaktualizować profilu");
     }
 
     return response.json();
@@ -89,7 +92,7 @@ export const profileApi = {
 
   getThesisDetails: async (thesisId: string): Promise<Thesis> => {
     const token = localStorage.getItem("accessToken");
-    return getThesisById(thesisId, token || '');
+    return getThesisById(thesisId, token || "");
   },
 };
 
@@ -199,8 +202,9 @@ export const createThesis = async (data: ThesisFormData, token: string) => {
     },
     body: JSON.stringify({
       ...data,
-      status: "FREE",
+      status: data.initialStudentIds.length > 0 ? "TAKEN" : "FREE",
       supervisor: supervisorId,
+      students: data.initialStudentIds, // Send initialStudentIds as students field
     }),
   });
 
