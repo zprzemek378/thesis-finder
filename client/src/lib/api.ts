@@ -60,15 +60,19 @@ export const getTheses = async (token: string, params?: ThesesQueryParams) => {
     Object.entries(params).forEach(([key, value]) => {
       if (value) {
         if (Array.isArray(value)) {
+          // Dla tablic (np. tags) dodajemy każdy element jako osobny parametr
           value.forEach((v) => searchParams.append(key, v));
-        } else {
-          searchParams.append(key, value);
+        } else if (typeof value === "string" && value.trim() !== "") {
+          // Dla stringów sprawdzamy czy nie są puste
+          searchParams.append(key, value.trim());
         }
       }
     });
   }
 
-  const url = `${API_URL}/theses${params ? `?${searchParams}` : ""}`;
+  const url = `${API_URL}/theses${
+    searchParams.toString() ? `?${searchParams}` : ""
+  }`;
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
