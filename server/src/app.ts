@@ -7,6 +7,7 @@ import thesesRouter from "./routes/theses";
 import requestsRouter from "./routes/requests";
 import messagesRouter from "./routes/messages";
 import usersRouter from "./routes/users";
+import chatsRouter from "./routes/chats";
 import { verifyAccessTokenMiddleware } from "./middlewares/auth";
 import cors from "cors";
 
@@ -33,6 +34,7 @@ app.use("/theses", thesesRouter);
 app.use("/requests", requestsRouter);
 app.use("/messages", messagesRouter);
 app.use("/users", usersRouter);
+app.use("/chats", chatsRouter);
 
 app.get("/protected", (req: any, res: any) => {
   res.json({ message: "Access granted", user: req.user });

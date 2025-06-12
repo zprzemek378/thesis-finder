@@ -14,30 +14,65 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { degree, field, status, tags, supervisor } = req.query;
-      const filter: any = {};
+      const initialFilter: any = {};
 
-      if (degree) filter.degree = degree;
-      if (field) filter.field = field;
-      if (status) filter.status = status;
+      // Najpierw pobierz prace z podstawowymi filtrami (bez statusu)
+      if (degree) initialFilter.degree = degree;
+      if (field) initialFilter.field = field;
       if (tags) {
         if (Array.isArray(tags)) {
-          filter.tags = { $in: tags };
+          initialFilter.tags = { $in: tags };
         } else if (typeof tags === "string") {
-          filter.tags = { $in: [tags] };
+          initialFilter.tags = { $in: [tags] };
         }
       }
       if (
         supervisor &&
         mongoose.Types.ObjectId.isValid(supervisor.toString())
       ) {
-        filter.supervisor = supervisor;
+        initialFilter.supervisor = supervisor;
       }
 
-      const theses: IThesis[] = await Thesis.find(filter)
+      const theses: IThesis[] = await Thesis.find(initialFilter)
         .populate("supervisor")
         .populate("students");
 
-      res.status(200).json(theses);
+      // Modyfikuj status każdej pracy i dodaj dane użytkowników
+      const modifiedTheses = await Promise.all(theses.map(async (thesis) => {
+        const availableSpots = thesis.studentsLimit - thesis.students.length;
+        const thesisObj = thesis.toObject();
+
+        // Pobierz dane użytkownika dla supervisora bezpośrednio z bazy
+        const supervisorUser = await User.findOne({
+          supervisor: thesis.supervisor._id,
+        });
+        thesisObj.supervisor = {
+          ...thesisObj.supervisor,
+          user: supervisorUser ? supervisorUser.toObject() : null
+        };
+
+        // Aktualizuj status na podstawie dostępnych miejsc
+        if (availableSpots === 0) {
+          thesisObj.status = "TAKEN";
+        } else if (
+          thesis.status !== "PENDING_APPROVAL" &&
+          thesis.status !== "ARCHIVED"
+        ) {
+          thesisObj.status = "FREE";
+        }
+
+        // Dodaj informację o wolnych miejscach
+        thesisObj.availableSpots = availableSpots;
+
+        return thesisObj;
+      }));
+
+      // Filtruj po statusie, jeśli został podany w query
+      const finalTheses = status
+        ? modifiedTheses.filter((thesis) => thesis.status === status)
+        : modifiedTheses;
+
+      res.status(200).json(finalTheses);
     } catch (error) {
       console.error("Błąd podczas pobierania listy prac dyplomowych:", error);
       res.status(500).json({ message: "Wystąpił błąd serwera." });
@@ -67,6 +102,16 @@ router.get(
           .json({ message: "Nie znaleziono pracy dyplomowej." });
       }
 
+      // Pobierz dane użytkownika dla supervisora
+      const supervisorUser = await User.findOne({
+        supervisor: thesis.supervisor._id,
+      });
+      const supervisorWithUser = {
+        ...thesis.supervisor,
+        user: supervisorUser ? supervisorUser.toObject() : null,
+      };
+
+      // Pobierz dane użytkowników dla studentów
       const studentsWithUser = await Promise.all(
         thesis.students.map(async (student: any) => {
           const user = await User.findOne({ student: student._id });
@@ -77,13 +122,14 @@ router.get(
         })
       );
 
-      // Zbuduj nowy obiekt thesis z rozszerzonymi danymi studentów
-      const thesisWithStudents = {
+      // Zbuduj nowy obiekt thesis z rozszerzonymi danymi supervisora i studentów
+      const thesisWithExtendedData = {
         ...thesis.toObject(),
+        supervisor: supervisorWithUser,
         students: studentsWithUser,
       };
 
-      res.status(200).json(thesisWithStudents);
+      res.status(200).json(thesisWithExtendedData);
     } catch (error) {
       console.error("Błąd podczas pobierania pracy dyplomowej po ID:", error);
       res.status(500).json({ message: "Wystąpił błąd serwera." });

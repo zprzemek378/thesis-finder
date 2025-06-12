@@ -40,7 +40,6 @@ export async function verifyAccessTokenMiddleware(
         _id: payload.sub,
         role: payload.role,
       };
-      console.log("req.user:", req.user);
     }
 
     next();
