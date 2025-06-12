@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Thesis } from "@/types/thesis";
 import StarButton from "@/components/ui/star-button";
+import { getDegreeLabel } from "@/utils/degreeUtils";
 
 interface ThesisCardProps {
   thesis: Thesis;
@@ -23,7 +24,9 @@ const ThesisCard = ({ thesis }: ThesisCardProps) => {
         <StarButton />
       </div>
 
-      <p className="text-sm text-gray-600 mb-4">{thesis.faculty}</p>
+      <p className="text-sm text-gray-600 mb-4">
+        {thesis.faculty} • {getDegreeLabel(thesis.degree)}
+      </p>
 
       <p className="text-gray-800 mb-6 line-clamp-3 flex-grow">
         {thesis.description}

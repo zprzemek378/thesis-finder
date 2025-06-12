@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Thesis } from "@/types/thesis";
 import UserCard from "@/components/user/UserCard";
+import { getDegreeLabel } from "@/utils/degreeUtils";
 
 interface ThesisSidebarProps {
   thesis: Thesis;
@@ -37,7 +38,7 @@ const ThesisSidebar = ({ thesis }: ThesisSidebarProps) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="font-medium">Typ pracy:</p>
-          <p>{thesis.degree}</p>
+          <p>{getDegreeLabel(thesis.degree)}</p>
         </div>
 
         <div>
