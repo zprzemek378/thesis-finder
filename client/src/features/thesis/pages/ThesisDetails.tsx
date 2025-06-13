@@ -68,7 +68,7 @@ const ThesisDetails = () => {
 
         await createChat(
           {
-            members: [user._id, thesis.supervisor._id],
+            members: [user._id, thesis.supervisor.user._id],
             title: thesis.title,
           },
           token
