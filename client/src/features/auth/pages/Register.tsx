@@ -9,8 +9,7 @@ import {
   FACULTIES,
   STUDIES_TYPES,
   DEGREES,
-  SERVER_URL,
-  PORT,
+  API_URL,
 } from "../../../../../shared/constants";
 import type {
   Faculty,
@@ -206,7 +205,7 @@ const Register = () => {
               : undefined,
         };
 
-        const response = await fetch(`${SERVER_URL}:${PORT}/auth/register`, {
+        const response = await fetch(`${API_URL}/auth/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

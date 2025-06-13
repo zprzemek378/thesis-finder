@@ -2,13 +2,16 @@ import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { loadEnv } from 'vite';
+import { loadEnv } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
-  const env = loadEnv(mode, process.cwd(), '')
+  const env = loadEnv(mode, process.cwd(), "");
   return {
+    esbuild: {
+      logOverride: { "this-is-undefined-in-esm": "silent" },
+    },
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
@@ -16,7 +19,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      __API_URL__: JSON.stringify(env.VITE_API_URL || 'http://localhost:3000'),
-    }
-  }
+      __API_URL__: JSON.stringify(env.VITE_API_URL || "http://localhost:3000"),
+    },
+  };
 });

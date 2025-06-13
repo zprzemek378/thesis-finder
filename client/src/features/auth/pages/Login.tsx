@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import AuthLayout from "@/common/layout/AuthLayout";
-import { PORT, SERVER_URL } from "../../../../../shared/constants";
+import { API_URL } from "../../../../../shared/constants";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const Login = () => {
     if (validateForm()) {
       setIsLoading(true);
       try {
-        const response = await fetch(`${SERVER_URL}:${PORT}/auth/login`, {
+        const response = await fetch(`${API_URL}/auth/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
