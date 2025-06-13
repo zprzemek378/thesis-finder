@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",  // W przypadku Express, najlepiej jest używać CommonJS
+    "module": "CommonJS", // W przypadku Express, najlepiej jest używać CommonJS
     "moduleResolution": "node",
-    "outDir": "./dist",    // Folder do kompilowanych plików .js
-    "rootDir": "./src",    // Folder z plikami .ts
-    "strict": true,        // Ścisła kontrola typów
-    "esModuleInterop": true,  // Umożliwia importowanie modułów CommonJS
+    "outDir": "./dist", // Folder do kompilowanych plików .js
+    "rootDir": "./", // Folder z plikami .ts
+    "strict": true, // Ścisła kontrola typów
+    "esModuleInterop": true, // Umożliwia importowanie modułów CommonJS
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts"],  // Do kompilacji bierzemy wszystkie pliki w src
-  "exclude": ["node_modules"]  // Ignorujemy node_modules
+  "include": ["index.ts", "src/**/*.ts"], // Do kompilacji bierzemy wszystkie pliki w src
+  "exclude": ["node_modules"] // Ignorujemy node_modules
 }
