@@ -14,8 +14,10 @@ async function startServer() {
     console.log("✅ Connected to MongoDB with Mongoose");
 
     const PORT = process.env.PORT || 3000;
+    const HOST = process.env.HOST || 'localhost';
     app.listen(PORT, () => {
-      console.log(`🚀 Server is running at http://localhost:${PORT}`);
+      console.log(`🚀 Server is running at http://${HOST}:${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   } catch (err) {
     console.error("❌ Failed to connect to MongoDB", err);

@@ -1,7 +1,4 @@
-export const PORT: number = 3000;
-export const SERVER_URL = "http://127.0.0.1";
-
-export const API_URL = `${SERVER_URL}:${PORT}`;
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export const FACULTIES = [
   {

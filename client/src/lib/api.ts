@@ -2,7 +2,8 @@ import { ThesisFormData, Thesis } from "../types/thesis";
 import { Request } from "../types/request";
 import { ProfileUser } from "../types/profile";
 
-const API_URL = "http://localhost:3000";
+declare const __API_URL__: string;
+const API_URL = __API_URL__;
 
 export const API_BASE_URL = `${API_URL}/api`;
 
