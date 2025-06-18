@@ -1,63 +1,72 @@
-import React from "react";
-import * as AspectRatio from "@radix-ui/react-aspect-ratio";
-import * as Separator from "@radix-ui/react-separator";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useState } from "react";
 import MainLayout from "@/common/layout/MainLayout";
-import ThesisSidebar from "@/features/thesis/components/ThesisSidebar";
-import StarButton from "@/components/ui/star-button";
-import { Thesis } from "@/types/thesis";
-import { User } from "@/types/user";
 import ChatsSidebar from "../components/ChatsSidebar";
 import SingleChat from "../components/SingleChat";
-import FixedHeightLayout from "@/common/layout/FixedHeightLayout";
+import SupervisorsList from "../components/SupervisorsList";
 
-const mockSupervisor: User = {
-  _id: "1",
-  firstName: "Jan",
-  lastName: "Kowalski",
-  email: "jan.kowalski@university.edu",
-  faculty: "Wydział Informatyki",
-  role: "SUPERVISOR",
-  academicTitle: "dr",
-};
-
-const mockStudents: User[] = [
-  {
-    _id: "2",
-    firstName: "Michał",
-    lastName: "Nowak",
-    email: "michal.nowak@university.edu",
-    faculty: "Wydział Informatyki",
-    role: "STUDENT",
-    degree: "Informatyka",
-    studyYear: 1,
-    studyMode: "STACJONARNE",
-  },
-  {
-    _id: "3",
-    firstName: "Tomasz",
-    lastName: "Malinowski",
-    email: "tomasz.malinowski@university.edu",
-    faculty: "Wydział Informatyki",
-    role: "STUDENT",
-    degree: "Informatyka",
-    studyYear: 1,
-    studyMode: "STACJONARNE",
-  },
-];
+interface User {
+  _id: string;
+  role: "STUDENT" | "SUPERVISOR" | "ADMIN";
+}
 
 const Chats = () => {
+  const [selectedChat, setSelectedChat] = useState<string | undefined>();
+  const [showSupervisors, setShowSupervisors] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  const handleChatSelect = (chatId: string) => {
+    setSelectedChat(chatId);
+    setShowSupervisors(false); // Hide supervisors list when chat is selected
+  };
+
   return (
-    <FixedHeightLayout>
-      <div className="h-full flex flex-col">
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 flex-1 min-h-0">
-          <div className="md:col-span-1 h-full">
-            <ChatsSidebar />
+    <MainLayout>
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Sidebar */}
+          <div className="md:col-span-1">
+            <ChatsSidebar
+              selectedChatId={selectedChat}
+              onChatSelect={handleChatSelect}
+              onNewChat={() => setShowSupervisors(true)}
+            />
           </div>
-          <SingleChat />
+
+          {/* Main content */}
+          <div className="md:col-span-2">
+            {showSupervisors && user?.role === "STUDENT" ? (
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-[var(--o-blue)]">
+                    Nowy czat
+                  </h2>
+                  <button
+                    onClick={() => setShowSupervisors(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <SupervisorsList />
+              </div>
+            ) : selectedChat ? (
+              <SingleChat chatId={selectedChat} />
+            ) : (
+              <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
+                Wybierz czat z listy lub rozpocznij nową konwersację
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </FixedHeightLayout>
+    </MainLayout>
   );
 };
 

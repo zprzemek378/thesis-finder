@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import AuthLayout from "@/common/layout/AuthLayout"
+import AuthLayout from "@/common/layout/AuthLayout";
+import { API_URL } from "../../../../../shared/constants";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   const validateForm = () => {
     let isValid = true;
@@ -39,14 +42,41 @@ const Login = () => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setServerError("");
+
     if (validateForm()) {
-      // Tutaj będzie logika logowania z backendem
-      console.log("Logowanie:", formData);
-      // Na razie przekierowanie do strony głównej
-      navigate("/");
+      setIsLoading(true);
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+          credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Błąd logowania");
+        }
+
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        navigate("/");
+      } catch (error) {
+        setServerError(
+          error instanceof Error
+            ? error.message
+            : "Wystąpił błąd podczas logowania"
+        );
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -56,7 +86,7 @@ const Login = () => {
       ...prev,
       [name]: value,
     }));
-    // Czyść błąd podczas pisania
+
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({
         ...prev,
@@ -67,23 +97,42 @@ const Login = () => {
 
   return (
     <AuthLayout>
-      {/* Main content */}
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-lg shadow-md p-8">
             {/* Back button */}
             <div className="mb-6">
-              <Link to="/" className="inline-flex items-center text-[var(--o-blue)] hover:underline">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/>
+              <Link
+                to="/"
+                className="inline-flex items-center text-[var(--o-blue)] hover:underline"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    d="M19 12H5M12 19l-7-7 7-7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
                 <span className="ml-2">Wstecz</span>
               </Link>
             </div>
-            
+
             <h2 className="text-2xl font-bold text-center text-[var(--o-blue)] mb-8">
               Zaloguj się
             </h2>
+
+            {serverError && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+                {serverError}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -101,6 +150,7 @@ const Login = () => {
                   onChange={handleChange}
                   error={!!errors.email}
                   placeholder="Wprowadź adres email"
+                  disabled={isLoading}
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -122,6 +172,7 @@ const Login = () => {
                   onChange={handleChange}
                   error={!!errors.password}
                   placeholder="Wprowadź hasło"
+                  disabled={isLoading}
                 />
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-500">{errors.password}</p>
@@ -131,8 +182,9 @@ const Login = () => {
               <Button
                 type="submit"
                 className="w-full bg-[var(--o-yellow)] hover:bg-[var(--o-yellow-dark)] text-black font-medium py-2 px-4 rounded"
+                disabled={isLoading}
               >
-                Zaloguj się
+                {isLoading ? "Logowanie..." : "Zaloguj się"}
               </Button>
             </form>
 

@@ -6,140 +6,67 @@ import { Textarea } from "@/components/ui/textarea";
 import { TagsInput } from "@/components/user/TagsInput";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { StudyType } from "../../types/thesis";
+import { createThesis } from "../../lib/api";
+import StudentSelect from "@/components/user/StudentSelect";
+import {
+  FACULTIES as FACULTIES_DATA,
+  FIELDS_OF_STUDY as FIELDS_DATA,
+  DEGREES as DEGREES_DATA,
+} from "../../../../shared/constants";
 
-const FACULTIES = [
-  { name: "Wydział Górnictwa i Geoinżynierii", value: "WGiG" },
-  {
-    name: "Wydział Inżynierii Metali i Informatyki Przemysłowej",
-    value: "WIMiIP",
-  },
-  { name: "Wydział Hutnictwa", value: "WH" },
-  { name: "Wydział Inżynierii Mechanicznej i Robotyki", value: "WIMiR" },
-  {
-    name: "Wydział Elektrotechniki, Automatyki, Informatyki i Inżynierii Biomedycznej",
-    value: "WEAIiIB",
-  },
-  {
-    name: "Wydział Informatyki, Elektroniki i Telekomunikacji",
-    value: "WIEiT",
-  },
-  { name: "Wydział Energetyki i Paliw", value: "WEiP" },
-  { name: "Wydział Inżynierii Materiałowej i Ceramiki", value: "WIMiC" },
-  { name: "Wydział Inżynierii Lądowej i Gospodarki Zasobami", value: "WILiGZ" },
-  { name: "Wydział Geologii, Geofizyki i Ochrony Środowiska", value: "WGGiOŚ" },
-  {
-    name: "Wydział Geodezji Górniczej i Inżynierii Środowiska",
-    value: "WGGiIŚ",
-  },
-  { name: "Wydział Matematyki Stosowanej", value: "WMS" },
-  { name: "Wydział Fizyki i Informatyki Stosowanej", value: "WFIS" },
-  { name: "Wydział Zarządzania", value: "WZ" },
-  { name: "Wydział Humanistyczny", value: "WHuman" },
-  { name: "Wydział Informatyki", value: "WI" },
-];
+interface Faculty {
+  value: string;
+  label: string;
+}
 
-const FIELDS_OF_STUDY: Record<string, { name: string; value: string }[]> = {
-  WGiG: [
-    { name: "Górnictwo i Geologia", value: "GiG" },
-    { name: "Geoinżynieria", value: "GEO" },
-  ],
-  WIMiIP: [
-    { name: "Inżynieria Metali", value: "IM" },
-    { name: "Informatyka Przemysłowa", value: "IP" },
-  ],
-  WH: [{ name: "Hutnictwo", value: "HUT" }],
-  WIMiR: [
-    { name: "Mechanika i Budowa Maszyn", value: "MiBM" },
-    { name: "Robotyka i Automatyka", value: "RiA" },
-  ],
-  WEAIiIB: [
-    { name: "Elektrotechnika", value: "ET" },
-    { name: "Automatyka i Robotyka", value: "AiR" },
-    { name: "Inżynieria Biomedyczna", value: "IB" },
-  ],
-  WIEiT: [
-    { name: "Informatyka", value: "INFA" },
-    { name: "Elektronika", value: "ELE" },
-    { name: "Telekomunikacja", value: "TEL" },
-    { name: "Automatyka i Robotyka", value: "AiR" },
-  ],
-  WEiP: [
-    { name: "Energetyka", value: "ENE" },
-    { name: "Technologia Paliw", value: "TP" },
-  ],
-  WIMiC: [
-    { name: "Inżynieria Materiałowa", value: "IMat" },
-    { name: "Ceramika", value: "CER" },
-  ],
-  WILiGZ: [
-    { name: "Inżynieria Lądowa", value: "IL" },
-    { name: "Gospodarka Zasobami", value: "GZ" },
-  ],
-  WGGiOŚ: [
-    { name: "Geologia", value: "GEO" },
-    { name: "Geofizyka", value: "GF" },
-    { name: "Ochrona Środowiska", value: "OŚ" },
-  ],
-  WGGiIŚ: [
-    { name: "Geodezja i Kartografia", value: "GiK" },
-    { name: "Inżynieria i Monitoring Środowiska", value: "IiMŚ" },
-    { name: "Informatyka Geoprzestrzenna", value: "IG" },
-  ],
-  WMS: [{ name: "Matematyka Stosowana", value: "MS" }],
-  WFIS: [
-    { name: "Fizyka Techniczna", value: "FT" },
-    { name: "Informatyka Stosowana", value: "IS" },
-  ],
-  WZ: [
-    { name: "Zarządzanie", value: "ZAR" },
-    { name: "Informatyka i Ekonometria", value: "IiE" },
-    { name: "Zarządzanie i Inżynieria Produkcji", value: "ZiIP" },
-  ],
-  WHuman: [
-    { name: "Socjologia", value: "SOC" },
-    { name: "Kulturoznawstwo", value: "KUL" },
-    { name: "Informatyka Społeczna", value: "IS" },
-    { name: "Nowoczesne Technologie w Kryminalistyce", value: "NTwK" },
-    { name: "Tworzenie Przestrzeni Wirtualnych i Gier", value: "TPWiG" },
-  ],
-  WI: [
-    { name: "Informatyka", value: "INFA" },
-    { name: "Data Science", value: "DS" },
-  ],
-};
+interface Field {
+  value: string;
+  label: string;
+}
 
-const STUDY_TYPES = [
-  { name: "Studia stacjonarne I stopnia (inżynierskie)", value: "stac_ing" },
-  { name: "Studia stacjonarne II stopnia (magisterskie)", value: "stac_mag" },
-  {
-    name: "Studia niestacjonarne I stopnia (inżynierskie)",
-    value: "niestac_ing",
-  },
-  {
-    name: "Studia niestacjonarne II stopnia (magisterskie)",
-    value: "niestac_mag",
-  },
-  { name: "Studia jednolite magisterskie", value: "jednolite" },
-];
+interface Degree {
+  value: StudyType;
+  label: string;
+}
+
+const FACULTIES = FACULTIES_DATA;
+const FIELDS_OF_STUDY = FIELDS_DATA;
+const DEGREES = DEGREES_DATA;
+
+interface ThesisFormData {
+  title: string;
+  description: string;
+  faculty: string;
+  field: string;
+  degree: StudyType;
+  tags: string[];
+  studentsLimit: number;
+  initialStudentIds: string[];
+}
 
 const AddThesis = () => {
-  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<ThesisFormData>({
     title: "",
     description: "",
     faculty: "",
     field: "",
-    type: "",
+    degree: "MASTER",
     tags: [],
-    slots: 1,
+    studentsLimit: 1,
+    initialStudentIds: [],
   });
+
   const [errors, setErrors] = useState({
     title: "",
     description: "",
     faculty: "",
     field: "",
-    type: "",
+    degree: "",
     tags: "",
-    slots: "",
+    studentsLimit: "",
+    initialStudentIds: "",
   });
 
   const validateForm = () => {
@@ -149,49 +76,49 @@ const AddThesis = () => {
       description: "",
       faculty: "",
       field: "",
-      type: "",
+      degree: "",
       tags: "",
-      slots: "",
+      studentsLimit: "",
+      initialStudentIds: "",
     };
 
-    // Tytuł
-    if (!formData.title) {
-      newErrors.title = "Tytuł jest wymagany";
-      isValid = false;
-    } else if (formData.title.length < 3) {
+    if (!formData.title || formData.title.length < 3) {
       newErrors.title = "Tytuł musi zawierać co najmniej 3 znaki";
       isValid = false;
     }
 
-    // Opis
-    if (!formData.description) {
-      newErrors.description = "Opis jest wymagany";
-      isValid = false;
-    } else if (formData.description.length < 10) {
+    if (!formData.description || formData.description.length < 10) {
       newErrors.description = "Opis musi zawierać co najmniej 10 znaków";
       isValid = false;
     }
 
-    // Wydział
     if (!formData.faculty) {
       newErrors.faculty = "Wydział jest wymagany";
       isValid = false;
     }
 
-    // Kierunek
     if (
       !formData.field ||
-      !FIELDS_OF_STUDY[formData.faculty].some(
-        (field) => field.value === formData.field
+      !FIELDS_OF_STUDY[formData.faculty]?.some(
+        (field: Field) => field.value === formData.field
       )
     ) {
       newErrors.field = "Kierunek jest wymagany";
       isValid = false;
     }
 
-    // Typ studiów
-    if (!formData.type) {
-      newErrors.type = "Typ studiów jest wymagany";
+    if (!formData.degree) {
+      newErrors.degree = "Stopień studiów jest wymagany";
+      isValid = false;
+    }
+
+    if (formData.studentsLimit < 1) {
+      newErrors.studentsLimit = "Limit studentów musi być większy od 0";
+      isValid = false;
+    }
+
+    if (formData.initialStudentIds.length > formData.studentsLimit) {
+      newErrors.initialStudentIds = `Liczba wybranych studentów (${formData.initialStudentIds.length}) przekracza limit miejsc (${formData.studentsLimit})`;
       isValid = false;
     }
 
@@ -199,19 +126,47 @@ const AddThesis = () => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [serverError, setServerError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError("");
+
+    console.log("Submitting form with data:", formData);
 
     if (validateForm()) {
-      // TODO
-      console.log("publishing:", formData);
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const thesis = await createThesis(formData, token);
+        navigate("/thesis/" + thesis._id);
+      } catch (error) {
+        console.error("Błąd podczas dodawania pracy:", error);
+        setServerError(
+          error instanceof Error
+            ? error.message
+            : "Wystąpił nieznany błąd podczas dodawania pracy."
+        );
+
+        if (
+          error instanceof Error &&
+          (error.message.includes("Zaloguj się ponownie") ||
+            error.message.includes("Brak uprawnień"))
+        ) {
+          navigate("/login");
+        }
+      }
     }
   };
 
   const handleChange = (
     e:
       | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      | { target: { name: string; value: string | string[] } }
+      | { target: { name: string; value: string | string[] | number } }
   ) => {
     const { name, value } = e.target;
 
@@ -226,6 +181,12 @@ const AddThesis = () => {
         [name]: "",
       }));
     }
+
+    // Log the next state value instead of current state
+    if (name === "initialStudentIds") {
+      console.log("Selected students:", value);
+    }
+    console.log(formData);
   };
 
   return (
@@ -236,9 +197,6 @@ const AddThesis = () => {
             Propozycja nowego tematu pracy dyplomowej
           </h2>
 
-          <h3 className="text-xl font-bold text-[var(--o-blue)] mb-8">
-            Podstawowe informacje
-          </h3>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
@@ -283,26 +241,23 @@ const AddThesis = () => {
               )}
             </div>
 
-            <h3 className="text-xl font-bold text-[var(--o-blue)] mb-8">
-              Wymagania i kategorie
-            </h3>
-
             <div className="flex gap-3 flex-col xl:flex-row">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Wydział*
                 </label>
                 <Select
-                  className="h-13"
                   value={formData.faculty}
-                  onValueChange={(value) => {
-                    handleChange({ target: { name: "faculty", value } });
-                  }}
+                  onValueChange={(value) =>
+                    handleChange({ target: { name: "faculty", value } })
+                  }
                   error={!!errors.faculty}
                   placeholder="Wybierz wydział"
                 >
-                  {FACULTIES.map((f) => (
-                    <SelectItem value={f.value}>{f.name}</SelectItem>
+                  {FACULTIES.map((faculty: Faculty) => (
+                    <SelectItem key={faculty.value} value={faculty.value}>
+                      {faculty.label}
+                    </SelectItem>
                   ))}
                 </Select>
                 {errors.faculty && (
@@ -315,7 +270,6 @@ const AddThesis = () => {
                   Kierunek*
                 </label>
                 <Select
-                  className="h-13"
                   value={formData.field}
                   onValueChange={(value) =>
                     handleChange({ target: { name: "field", value } })
@@ -323,8 +277,10 @@ const AddThesis = () => {
                   error={!!errors.field}
                   placeholder="Wybierz kierunek"
                 >
-                  {FIELDS_OF_STUDY[formData.faculty as string]?.map((f) => (
-                    <SelectItem value={f.value}>{f.name}</SelectItem>
+                  {FIELDS_OF_STUDY[formData.faculty]?.map((field: Field) => (
+                    <SelectItem key={field.value} value={field.value}>
+                      {field.label}
+                    </SelectItem>
                   ))}
                 </Select>
                 {errors.field && (
@@ -334,23 +290,24 @@ const AddThesis = () => {
 
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Typ studiów*
+                  Stopień*
                 </label>
                 <Select
-                  className="h-13"
-                  value={formData.type}
+                  value={formData.degree}
                   onValueChange={(value) =>
-                    handleChange({ target: { name: "type", value } })
+                    handleChange({ target: { name: "degree", value } })
                   }
-                  error={!!errors.type}
-                  placeholder="Wybierz wydział"
+                  error={!!errors.degree}
+                  placeholder="Wybierz stopień"
                 >
-                  {STUDY_TYPES.map((f) => (
-                    <SelectItem value={f.value}>{f.name}</SelectItem>
+                  {DEGREES.map((degree: Degree) => (
+                    <SelectItem key={degree.value} value={degree.value}>
+                      {degree.label}
+                    </SelectItem>
                   ))}
                 </Select>
-                {errors.type && (
-                  <p className="mt-1 text-sm text-red-500">{errors.type}</p>
+                {errors.degree && (
+                  <p className="mt-1 text-sm text-red-500">{errors.degree}</p>
                 )}
               </div>
             </div>
@@ -369,14 +326,14 @@ const AddThesis = () => {
                   placeholder="Wpisz tag i zatwierdź enterem lub przecinkiem"
                   error={!!errors.tags}
                 />
-                {errors.type && (
+                {errors.tags && (
                   <p className="mt-1 text-sm text-red-500">{errors.tags}</p>
                 )}
               </div>
 
               <div className="flex-1">
                 <label
-                  htmlFor="slots"
+                  htmlFor="studentsLimit"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Liczba miejsc*
@@ -385,18 +342,52 @@ const AddThesis = () => {
                   className="h-[58px]"
                   type="number"
                   min={1}
-                  id="slots"
-                  name="slots"
-                  value={formData.slots}
-                  onChange={handleChange}
-                  error={!!errors.slots}
+                  id="studentsLimit"
+                  name="studentsLimit"
+                  value={formData.studentsLimit}
+                  onChange={(e) =>
+                    handleChange({
+                      target: {
+                        name: "studentsLimit",
+                        value: parseInt(e.target.value, 10),
+                      },
+                    })
+                  }
+                  error={!!errors.studentsLimit}
                   placeholder="Wprowadź ilość miejsc"
                 />
-                {errors.slots && (
-                  <p className="mt-1 text-sm text-red-500">{errors.slots}</p>
+                {errors.studentsLimit && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.studentsLimit}
+                  </p>
                 )}
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Studenci
+              </label>
+              <StudentSelect
+                onSelect={(selectedIds) =>
+                  handleChange({
+                    target: { name: "initialStudentIds", value: selectedIds },
+                  })
+                }
+                selectedStudents={formData.initialStudentIds}
+                maxStudents={formData.studentsLimit}
+                error={!!errors.initialStudentIds}
+              />
+            </div>
+
+            {serverError && (
+              <div
+                className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                role="alert"
+              >
+                <span className="block sm:inline">{serverError}</span>
+              </div>
+            )}
 
             <Button
               type="submit"

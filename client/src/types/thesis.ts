@@ -1,17 +1,23 @@
 import { User } from "./user";
 
-export type ThesisStatus = "FREE" | "IN_PROGRESS" | "TAKEN" | "FINISHED";
-export type StudyType = "BACHELOR" | "ENGINEERING" | "MASTER" | "DOCTORAL" | "POST-GRADUATE";
+export type ThesisStatus = "FREE" | "TAKEN" | "PENDING_APPROVAL" | "ARCHIVED";
+export type StudyType = "BACHELOR" | "MASTER" | "DOCTORAL" | "POSTGRADUATE";
 
-export interface Thesis {
-  _id: string;
+export interface ThesisFormData {
   title: string;
   description: string;
-  degree: string;
+  degree: StudyType;
+  field: string;
   faculty: string;
-  supervisor: User;
+  tags: string[];
   studentsLimit: number;
+  initialStudentIds: string[];
+}
+
+export interface Thesis extends ThesisFormData {
+  _id: string;
+  supervisor: User;
   students: User[];
   status: ThesisStatus;
-  tags: string[];
+  availableSpots: number;
 }

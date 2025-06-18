@@ -1,67 +1,90 @@
-import * as Separator from "@radix-ui/react-separator";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ChatPreview from "./ChatPreview";
+import { useEffect, useState } from "react";
+import { getUserChats } from "@/lib/api";
+import { UserChat } from "@/types/chat";
+import { Button } from "@/components/ui/button";
+import { MessageSquarePlus } from 'lucide-react';
 
-const exampleMessages = [
-  {
-    name: "Anna Kowalska",
-    lastMessage: "O której się spotykamy?",
-    sentByMe: false,
-  },
-  {
-    name: "Jan Nowak",
-    lastMessage: "Już wysłałem dokumenty.",
-    sentByMe: true,
-  },
-  {
-    name: "Katarzyna Wiśniewska",
-    lastMessage: "Dzięki za pomoc!",
-    sentByMe: false,
-  },
-  {
-    name: "Piotr Zieliński",
-    lastMessage: "Zaraz oddzwonię.",
-    sentByMe: true,
-  },
-  {
-    name: "Maria Lewandowska",
-    lastMessage: "Jasne, do zobaczenia jutro!",
-    sentByMe: false,
-  },
-];
+interface ChatsSidebarProps {
+  onChatSelect: (chatId: string) => void;
+  selectedChatId?: string;
+  onNewChat?: () => void;
+}
 
-const ChatsSidebar = () => {
+const ChatsSidebar = ({ onChatSelect, selectedChatId, onNewChat }: ChatsSidebarProps) => {
+  const navigate = useNavigate();
+  const [chats, setChats] = useState<UserChat[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>('');
+
+  useEffect(() => {
+    const userString = localStorage.getItem('user');
+    if (userString) {
+      const user = JSON.parse(userString);
+      setUserRole(user.role);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+        const chatsData = await getUserChats(token);
+        setChats(chatsData);
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Wystąpił błąd podczas pobierania czatów"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [navigate]);
+
   return (
-    <div className="bg-white rounded-lg shadow-md h-full text-left ">
-      {/* TODO Link */}
-      <Link
-        to="/search"
-        className="p-6 flex items-center text-[var(--o-blue)] mb-6 hover:underline"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="mr-2"
-        >
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-        Wstecz
-      </Link>
-
-      <div className="font-bold px-2">Czaty</div>
+    <div className="bg-white rounded-lg shadow-md h-full text-left">
+      <div className="p-4 border-b">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold">Czaty</h2>
+          {userRole === 'STUDENT' && onNewChat && (
+            <Button
+              onClick={onNewChat}
+              variant="outline"
+              size="sm"
+              className="bg-[var(--o-yellow)] hover:bg-[var(--o-yellow-dark)] text-black"
+            >
+              <MessageSquarePlus className="w-4 h-4 mr-2" />
+              Nowy czat
+            </Button>
+          )}
+        </div>
+      </div>
 
       <div>
-        {exampleMessages.map((m) => (
-          <ChatPreview message={m} />
+        {isLoading && <div className="px-4 py-4">Ładowanie...</div>}
+        {error && <div className="px-4 py-4 text-red-600">{error}</div>}
+        {!isLoading && !error && chats.length === 0 && (
+          <div className="px-4 py-4 text-gray-500">Brak czatów</div>
+        )}
+        {chats.map((chat) => (
+          <ChatPreview
+            key={chat.chatId}
+            chatId={chat.chatId}
+            name={chat.name}
+            lastMessage={chat.lastMessage}
+            onSelect={onChatSelect}
+            isSelected={selectedChatId === chat.chatId}
+          />
         ))}
-        <Separator.Root className="h-px bg-gray-200" />
       </div>
     </div>
   );
